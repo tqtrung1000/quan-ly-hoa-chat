@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ Thống Quản Lý Chai Máu</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Auth Container -->
+    <div id="auth-container" class="auth-container">
+      <div class="logo">
+        <h1><i class="fas fa-vial"></i> Hệ Thống Quản Lý Chai Máu</h1>
+      </div>
+      <div class="tabs">
+        <button id="login-tab" class="tab active">Đăng Nhập</button>
+        <button id="register-tab" class="tab">Đăng Ký</button>
+      </div>
+      
+      <!-- Login Form -->
+      <form id="login-form" class="form">
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" required>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Mật khẩu</label>
+          <input type="password" id="login-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+      </form>
+      
+      <!-- Register Form -->
+      <form id="register-form" class="form hidden">
+        <div class="form-group">
+          <label for="register-name">Tên</label>
+          <input type="text" id="register-name" required>
+        </div>
+        <div class="form-group">
+          <label for="register-email">Email</label>
+          <input type="email" id="register-email" required>
+        </div>
+        <div class="form-group">
+          <label for="register-password">Mật khẩu</label>
+          <input type="password" id="register-password" required>
+        </div>
+        <div class="form-group">
+          <label for="register-department">Khoa</label>
+          <select id="register-department" required>
+            <option value="">Chọn Khoa</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Đăng Ký</button>
+      </form>
+    </div>
+    
+    <!-- Main App Container -->
+    <div id="app-container" class="app-container hidden">
+      <!-- Header -->
+      <header class="header">
+        <div class="logo">
+          <h1><i class="fas fa-vial"></i> Hệ Thống Quản Lý Chai Máu</h1>
+        </div>
+        <div class="user-info">
+          <span id="user-name"></span>
+          <span id="user-department"></span>
+          <button id="logout-btn" class="btn btn-outline">Đăng Xuất</button>
+        </div>
+      </header>
+      
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <ul class="nav-menu">
+          <li class="nav-item" data-page="dashboard">
+            <i class="fas fa-tachometer-alt"></i> Bảng Điều Khiển
+          </li>
+          <li class="nav-item" data-page="distribute">
+            <i class="fas fa-share-square"></i> Phân Phối Chai
+          </li>
+          <li class="nav-item" data-page="return">
+            <i class="fas fa-undo"></i> Trả Chai
+          </li>
+          <li class="nav-item" data-page="departments">
+            <i class="fas fa-hospital"></i> Các Khoa
+          </li>
+          <li class="nav-item admin-only hidden" data-page="bottles">
+            <i class="fas fa-flask"></i> Quản Lý Chai
+          </li>
+          <li class="nav-item admin-only hidden" data-page="users">
+            <i class="fas fa-users"></i> Quản Lý Người Dùng
+          </li>
+        </ul>
+      </nav>
+      
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page">
+          <h2>Bảng Điều Khiển</h2>
+          <div class="dashboard-cards">
+            <div class="card">
+              <div class="card-header">
+                <h3>Chai Đã Phân Phối</h3>
+              </div>
+              <div class="card-body">
+                <h2 id="bottles-out">0</h2>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3>Chai Khả Dụng</h3>
+              </div>
+              <div class="card-body">
+                <h2 id="bottles-available">0</h2>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3>Tổng Số Khoa</h3>
+              </div>
+              <div class="card-body">
+                <h2 id="department-count">0</h2>
+              </div>
+            </div>
+          </div>
+          
+          <div class="recent-activity">
+            <h3>Hoạt Động Gần Đây</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Hành Động</th>
+                  <th>Khoa</th>
+                  <th>Số Lượng Chai</th>
+                  <th>Ngày</th>
+                </tr>
+              </thead>
+              <tbody id="recent-activity-table">
+                <!-- Activity data will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Distribute Bottles Page -->
+        <div id="distribute-page" class="page hidden">
+          <h2>Phân Phối Chai</h2>
+          
+          <form id="distribute-form" class="form">
+            <div class="form-group">
+              <label for="distribute-department">Khoa Nhận</label>
+              <div class="search-input">
+                <input type="text" id="department-search" placeholder="Tìm kiếm khoa...">
+                <div id="department-results" class="search-results"></div>
+              </div>
+              <input type="hidden" id="distribute-department-id" required>
+              <span id="selected-department" class="selected-item"></span>
+            </div>
+            
+            <div class="form-group">
+              <label for="distribute-recipient">Người Nhận</label>
+              <select id="distribute-recipient" required>
+                <option value="">Chọn Người Nhận</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="bottle-codes">Mã Chai</label>
+              <div class="bottle-code-container">
+                <div class="bottle-input-group">
+                  <input type="text" class="bottle-code-input" placeholder="Quét hoặc nhập mã chai">
+                  <button type="button" class="btn btn-sm add-bottle-btn">Thêm</button>
+                </div>
+                <ul id="bottle-list" class="bottle-list">
+                  <!-- Bottle codes will be added here -->
+                </ul>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="distribute-notes">Ghi Chú</label>
+              <textarea id="distribute-notes" rows="3"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Phân Phối Chai</button>
+          </form>
+        </div>
+        
+        <!-- Return Bottles Page -->
+        <div id="return-page" class="page hidden">
+          <h2>Trả Chai</h2>
+          
+          <div class="form">
+            <div class="form-group">
+              <label for="return-bottle-code">Quét Mã Chai</label>
+              <input type="text" id="return-bottle-code" placeholder="Quét hoặc nhập mã chai">
+              <button id="scan-return-bottle" class="btn">Quét</button>
+            </div>
+          </div>
+          
+          <div id="bottle-info" class="bottle-info hidden">
+            <h3>Thông Tin Chai</h3>
+            <div class="info-card">
+              <div class="info-row">
+                <span class="info-label">Mã Chai:</span>
+                <span id="bottle-info-code" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Khoa Hiện Tại:</span>
+                <span id="bottle-info-department" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Người Nhận:</span>
+                <span id="bottle-info-user" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Mã Lô:</span>
+                <span id="bottle-info-batch" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Ngày Phân Phối:</span>
+                <span id="bottle-info-date" class="info-value"></span>
+              </div>
+            </div>
+            
+            <div class="form">
+              <div class="form-group">
+                <label for="return-notes">Ghi Chú Trả Lại</label>
+                <textarea id="return-notes" rows="3"></textarea>
+              </div>
+              <button id="return-bottle-btn" class="btn btn-primary">Trả Chai</button>
+            </div>
+          </div>
+          
+          <div id="batch-info" class="batch-info hidden">
+            <h3>Thông Tin Lô</h3>
+            <div class="info-card">
+              <div class="info-row">
+                <span class="info-label">Mã Lô:</span>
+                <span id="batch-info-id" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Khoa Nguồn:</span>
+                <span id="batch-info-source" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Khoa Đích:</span>
+                <span id="batch-info-target" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Tổng Số Chai:</span>
+                <span id="batch-info-total" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Chai Đã Trả:</span>
+                <span id="batch-info-returned" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Trạng Thái:</span>
+                <span id="batch-info-status" class="info-value"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Departments Page -->
+        <div id="departments-page" class="page hidden">
+          <h2>Các Khoa</h2>
+          
+          <div class="department-search">
+            <input type="text" id="department-search-filter" placeholder="Tìm kiếm khoa...">
+          </div>
+          
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tên</th>
+                <th>Mã</th>
+                <th>Chai Chưa Trả</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="departments-table">
+              <!-- Department data will be populated here -->
+            </tbody>
+          </table>
+          
+          <div id="department-detail-modal" class="modal hidden">
+            <div class="modal-content">
+              <span class="close-modal">&times;</span>
+              <h3>Chi Tiết Khoa</h3>
+              <div id="department-detail-content"></div>
+              
+              <h4>Chai Chưa Trả</h4>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mã Chai</th>
+                    <th>Mã Lô</th>
+                    <th>Ngày Phân Phối</th>
+                  </tr>
+                </thead>
+                <tbody id="unreturned-bottles-table">
+                  <!-- Unreturned bottles data will be populated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Manage Bottles Page (Admin Only) -->
+        <div id="bottles-page" class="page hidden">
+          <h2>Quản Lý Chai</h2>
+          
+          <div class="action-bar">
+            <button id="add-bottle-btn" class="btn">Thêm Chai Mới</button>
+          </div>
+          
+          <div class="filter-bar">
+            <select id="bottle-status-filter">
+              <option value="all">Tất Cả Trạng Thái</option>
+              <option value="available">Khả Dụng</option>
+              <option value="distributed">Đã Phân Phối</option>
+            </select>
+            <input type="text" id="bottle-search" placeholder="Tìm kiếm mã chai...">
+          </div>
+          
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã</th>
+                <th>Trạng Thái</th>
+                <th>Khoa Hiện Tại</th>
+                <th>Mã Lô</th>
+                <th>Cập Nhật Lần Cuối</th>
+              </tr>
+            </thead>
+            <tbody id="bottles-table">
+              <!-- Bottle data will be populated here -->
+            </tbody>
+          </table>
+          
+          <div id="add-bottle-modal" class="modal hidden">
+            <div class="modal-content">
+              <span class="close-modal">&times;</span>
+              <h3>Thêm Chai Mới</h3>
+              <form id="add-bottle-form" class="form">
+                <div class="form-group">
+                  <label for="new-bottle-code">Mã Chai</label>
+                  <input type="text" id="new-bottle-code" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Thêm Chai</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Manage Users Page (Admin Only) -->
+        <div id="users-page" class="page hidden">
+          <h2>Quản Lý Người Dùng</h2>
+          
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tên</th>
+                <th>Email</th>
+                <th>Khoa</th>
+                <th>Vai Trò</th>
+              </tr>
+            </thead>
+            <tbody id="users-table">
+              <!-- User data will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+  
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container"></div>
+  
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
