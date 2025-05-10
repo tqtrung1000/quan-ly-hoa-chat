@@ -1,71 +1,39 @@
-const mongoose = require('mongoose');
-
-const batchSchema = mongoose.Schema(
-  {
+module.exports = (sequelize, DataTypes) => {
+  const Batch = sequelize.define('Batch', {
     batchId: {
-      type: String,
-      required: true,
-      unique: true,
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true
     },
-    sourceDepartment: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Department',
-      required: true,
-    },
-    targetDepartment: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Department',
-      required: true,
-    },
-    distributedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    receivedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    bottles: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Bottle',
-      },
-    ],
     bottleCount: {
-      type: Number,
-      required: true,
-      min: 1,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        min: 1
+      }
     },
     returnedCount: {
-      type: Number,
-      default: 0,
+      type: DataTypes.INTEGER,
+      defaultValue: 0
     },
     status: {
-      type: String,
-      enum: ['active', 'completed'],
-      default: 'active',
+      type: DataTypes.ENUM('active', 'completed'),
+      defaultValue: 'active'
     },
     notes: {
-      type: String,
-      trim: true,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
+      type: DataTypes.TEXT,
+      allowNull: true
+    }
+    // Foreign keys will be added by associations:
+    // sourceDepartmentId, targetDepartmentId, distributedById, receivedById
+  }, {
+    timestamps: true
+  });
 
-// Virtual for calculating unreturned bottles
-batchSchema.virtual('unreturnedCount').get(function () {
-  return this.bottleCount - this.returnedCount;
-});
+  // Virtual getter for unreturned count
+  Batch.prototype.getUnreturnedCount = function() {
+    return this.bottleCount - this.returnedCount;
+  };
 
-// Set to ensure virtuals are included when converting to JSON
-batchSchema.set('toJSON', { virtuals: true });
-batchSchema.set('toObject', { virtuals: true });
-
-const Batch = mongoose.model('Batch', batchSchema);
-
-module.exports = Batch;
+  return Batch;
+};

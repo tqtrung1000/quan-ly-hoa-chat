@@ -1,48 +1,43 @@
-const mongoose = require('mongoose');
-
-const departmentSchema = mongoose.Schema(
-  {
+module.exports = (sequelize, DataTypes) => {
+  const Department = sequelize.define('Department', {
     name: {
-      type: String,
-      required: [true, 'Vui lòng nhập tên khoa'],
+      type: DataTypes.STRING,
+      allowNull: false,
       unique: true,
-      trim: true,
+      validate: {
+        notEmpty: { msg: 'Vui lòng nhập tên khoa' }
+      }
     },
     code: {
-      type: String,
-      required: [true, 'Vui lòng nhập mã khoa'],
+      type: DataTypes.STRING,
+      allowNull: false,
       unique: true,
-      trim: true,
+      validate: {
+        notEmpty: { msg: 'Vui lòng nhập mã khoa' }
+      }
     },
     description: {
-      type: String,
-      trim: true,
+      type: DataTypes.TEXT,
+      allowNull: true
     },
     bottlesOut: {
-      type: Number,
-      default: 0,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    }
+  }, {
+    timestamps: true
+  });
 
-// Virtual for calculating unreturned bottles
-departmentSchema.virtual('unreturnedBottleCount').get(function () {
-  return this.bottlesOut;
-});
+  // Virtual getter for unreturned bottle count
+  Department.prototype.getUnreturnedBottleCount = function() {
+    return this.bottlesOut;
+  };
 
-// Method to update bottlesOut count
-departmentSchema.methods.updateBottleCount = function (count) {
-  this.bottlesOut += count;
-  return this.save();
+  // Method to update bottlesOut count
+  Department.prototype.updateBottleCount = async function(count) {
+    this.bottlesOut += count;
+    return await this.save();
+  };
+
+  return Department;
 };
-
-// Set to ensure virtuals are included when converting to JSON
-departmentSchema.set('toJSON', { virtuals: true });
-departmentSchema.set('toObject', { virtuals: true });
-
-const Department = mongoose.model('Department', departmentSchema);
-
-module.exports = Department;

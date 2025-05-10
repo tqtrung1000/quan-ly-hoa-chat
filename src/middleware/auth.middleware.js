@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/user.model');
+const { User } = require('../models/index');
 
 const protect = async (req, res, next) => {
   let token;
@@ -15,18 +15,22 @@ const protect = async (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Get user from the token
-      req.user = await User.findById(decoded.id).select('-password');
+      // Get user from the token (excluding password)
+      req.user = await User.findByPk(decoded.id, {
+        attributes: { exclude: ['password'] }
+      });
 
       next();
     } catch (error) {
       console.error(error);
       res.status(401).json({ message: 'Không được phép, token không hợp lệ' });
+      return;
     }
   }
 
   if (!token) {
     res.status(401).json({ message: 'Không được phép, không có token' });
+    return;
   }
 };
 

@@ -1,6 +1,4 @@
-const Bottle = require('../models/bottle.model');
-const Batch = require('../models/batch.model');
-const Department = require('../models/department.model');
+const { Bottle, Batch, Department, User, sequelize } = require('../models/index');
 
 // @desc    Create new bottle
 // @route   POST /api/bottles
@@ -10,7 +8,9 @@ const createBottle = async (req, res) => {
     const { code } = req.body;
 
     // Check if bottle already exists
-    const bottleExists = await Bottle.findOne({ code });
+    const bottleExists = await Bottle.findOne({ 
+      where: { code }
+    });
 
     if (bottleExists) {
       return res.status(400).json({ message: 'Chai với mã này đã tồn tại' });
@@ -37,9 +37,20 @@ const createBottle = async (req, res) => {
 // @access  Private
 const getBottles = async (req, res) => {
   try {
-    const bottles = await Bottle.find({})
-      .populate('currentDepartment', 'name code')
-      .populate('currentUser', 'name email');
+    const bottles = await Bottle.findAll({
+      include: [
+        { 
+          model: Department, 
+          as: 'currentDepartment',
+          attributes: ['name', 'code'] 
+        },
+        { 
+          model: User, 
+          as: 'currentUser',
+          attributes: ['name', 'email'] 
+        }
+      ]
+    });
     res.json(bottles);
   } catch (error) {
     console.error(error);
@@ -53,23 +64,49 @@ const getBottles = async (req, res) => {
 const getBottleByCode = async (req, res) => {
   try {
     const { code } = req.params;
-    const bottle = await Bottle.findOne({ code })
-      .populate('currentDepartment', 'name code')
-      .populate('currentUser', 'name email')
-      .populate({
-        path: 'history.department',
-        select: 'name code',
-      })
-      .populate({
-        path: 'history.user',
-        select: 'name email',
-      });
+    const BottleHistory = sequelize.models.BottleHistory;
+    
+    const bottle = await Bottle.findOne({
+      where: { code },
+      include: [
+        { 
+          model: Department, 
+          as: 'currentDepartment',
+          attributes: ['name', 'code'] 
+        },
+        { 
+          model: User, 
+          as: 'currentUser',
+          attributes: ['name', 'email'] 
+        }
+      ]
+    });
 
-    if (bottle) {
-      res.json(bottle);
-    } else {
-      res.status(404).json({ message: 'Không tìm thấy chai' });
+    if (!bottle) {
+      return res.status(404).json({ message: 'Không tìm thấy chai' });
     }
+
+    // Get bottle history
+    const history = await BottleHistory.findAll({
+      where: { bottleId: bottle.id },
+      include: [
+        { 
+          model: Department,
+          attributes: ['name', 'code'] 
+        },
+        { 
+          model: User,
+          attributes: ['name', 'email'] 
+        }
+      ],
+      order: [['createdAt', 'ASC']]
+    });
+
+    // Add history to bottle response
+    const response = bottle.toJSON();
+    response.history = history;
+    
+    res.json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Lỗi máy chủ', error: error.message });
@@ -80,6 +117,8 @@ const getBottleByCode = async (req, res) => {
 // @route   POST /api/bottles/distribute
 // @access  Private
 const distributeBottles = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  
   try {
     const { bottles, departmentId, userId, notes } = req.body;
 
@@ -88,7 +127,7 @@ const distributeBottles = async (req, res) => {
     }
 
     // Check if department exists
-    const department = await Department.findById(departmentId);
+    const department = await Department.findByPk(departmentId);
     if (!department) {
       return res.status(404).json({ message: 'Không tìm thấy khoa' });
     }
@@ -99,17 +138,19 @@ const distributeBottles = async (req, res) => {
     // Create new batch
     const batch = await Batch.create({
       batchId,
-      sourceDepartment: req.user.department,
-      targetDepartment: departmentId,
-      distributedBy: req.user._id,
-      receivedBy: userId,
+      sourceDepartmentId: req.user.departmentId,
+      targetDepartmentId: departmentId,
+      distributedById: req.user.id,
+      receivedById: userId,
       bottleCount: bottles.length,
       notes,
-    });
+    }, { transaction });
 
     // Process each bottle
     const bottlePromises = bottles.map(async (bottleCode) => {
-      const bottle = await Bottle.findOne({ code: bottleCode });
+      const bottle = await Bottle.findOne({ 
+        where: { code: bottleCode }
+      });
       
       if (!bottle) {
         return { code: bottleCode, status: 'error', message: 'Không tìm thấy chai' };
@@ -125,8 +166,8 @@ const distributeBottles = async (req, res) => {
       
       await bottle.distribute(departmentId, userId, batchId, notes);
       
-      // Add bottle to batch
-      batch.bottles.push(bottle._id);
+      // Add bottle to batch through the junction table
+      await batch.addBottle(bottle, { transaction });
       
       return { code: bottleCode, status: 'success', bottle };
     });
@@ -138,8 +179,7 @@ const distributeBottles = async (req, res) => {
       results.filter(result => result.status === 'success').length
     );
     
-    // Save updated batch with bottle references
-    await batch.save();
+    await transaction.commit();
 
     res.json({
       batchId,
@@ -148,6 +188,7 @@ const distributeBottles = async (req, res) => {
       errorCount: results.filter(r => r.status === 'error').length,
     });
   } catch (error) {
+    await transaction.rollback();
     console.error(error);
     res.status(500).json({ message: 'Lỗi máy chủ', error: error.message });
   }
@@ -157,36 +198,47 @@ const distributeBottles = async (req, res) => {
 // @route   POST /api/bottles/return
 // @access  Private
 const returnBottle = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  
   try {
     const { code, notes } = req.body;
 
     // Find bottle by code
-    const bottle = await Bottle.findOne({ code }).populate('currentDepartment');
+    const bottle = await Bottle.findOne({ 
+      where: { code },
+      include: [{ model: Department, as: 'currentDepartment' }]
+    });
 
     if (!bottle) {
+      await transaction.rollback();
       return res.status(404).json({ message: 'Không tìm thấy chai' });
     }
 
     if (bottle.status !== 'distributed') {
+      await transaction.rollback();
       return res.status(400).json({ message: 'Chai hiện không được phân phối' });
     }
 
     // Store department and batch ID before returning
-    const departmentId = bottle.currentDepartment._id;
+    const departmentId = bottle.currentDepartmentId;
     const batchId = bottle.batchId;
 
     // Return the bottle
-    await bottle.returnBottle(req.user._id, notes);
+    await bottle.returnBottle(req.user.id, notes);
 
     // Update department's bottlesOut count
-    const department = await Department.findById(departmentId);
+    const department = await Department.findByPk(departmentId);
     if (department) {
       await department.updateBottleCount(-1); // Decrease by 1
     }
 
     // Update batch's returnedCount
     if (batchId) {
-      const batch = await Batch.findOne({ batchId });
+      const batch = await Batch.findOne({ 
+        where: { batchId },
+        transaction
+      });
+      
       if (batch) {
         batch.returnedCount += 1;
         
@@ -195,25 +247,75 @@ const returnBottle = async (req, res) => {
           batch.status = 'completed';
         }
         
-        await batch.save();
+        await batch.save({ transaction });
       }
     }
 
+    await transaction.commit();
+
     // Fetch batch information for the response
-    const batchInfo = batchId ? await Batch.findOne({ batchId })
-      .populate('sourceDepartment', 'name code')
-      .populate('targetDepartment', 'name code')
-      .populate('distributedBy', 'name')
-      .populate('receivedBy', 'name') : null;
+    const batchInfo = batchId ? await Batch.findOne({
+      where: { batchId },
+      include: [
+        { 
+          model: Department, 
+          as: 'sourceDepartment',
+          attributes: ['name', 'code'] 
+        },
+        { 
+          model: Department, 
+          as: 'targetDepartment',
+          attributes: ['name', 'code'] 
+        },
+        { 
+          model: User, 
+          as: 'distributedBy',
+          attributes: ['name'] 
+        },
+        { 
+          model: User, 
+          as: 'receivedBy',
+          attributes: ['name'] 
+        }
+      ]
+    }) : null;
+
+    // Get bottle with history for response
+    const BottleHistory = sequelize.models.BottleHistory;
+    const updatedBottle = await Bottle.findOne({
+      where: { code },
+      include: [{
+        model: Department,
+        as: 'currentDepartment',
+        attributes: ['name', 'code']
+      }]
+    });
+    
+    const history = await BottleHistory.findAll({
+      where: { bottleId: updatedBottle.id },
+      include: [
+        { 
+          model: Department,
+          attributes: ['name', 'code'] 
+        },
+        { 
+          model: User,
+          attributes: ['name'] 
+        }
+      ],
+      order: [['createdAt', 'ASC']]
+    });
+    
+    const bottleWithHistory = updatedBottle.toJSON();
+    bottleWithHistory.history = history;
 
     res.json({
       message: 'Trả chai thành công',
-      bottle: await Bottle.findOne({ code })
-        .populate('history.department', 'name code')
-        .populate('history.user', 'name'),
+      bottle: bottleWithHistory,
       batch: batchInfo,
     });
   } catch (error) {
+    await transaction.rollback();
     console.error(error);
     res.status(500).json({ message: 'Lỗi máy chủ', error: error.message });
   }
@@ -226,18 +328,35 @@ const getBatchInfo = async (req, res) => {
   try {
     const { batchId } = req.params;
     
-    const batch = await Batch.findOne({ batchId })
-      .populate('sourceDepartment', 'name code')
-      .populate('targetDepartment', 'name code')
-      .populate('distributedBy', 'name email')
-      .populate('receivedBy', 'name email')
-      .populate({
-        path: 'bottles',
-        populate: {
-          path: 'history.department',
-          select: 'name code',
+    const batch = await Batch.findOne({
+      where: { batchId },
+      include: [
+        { 
+          model: Department, 
+          as: 'sourceDepartment',
+          attributes: ['name', 'code'] 
         },
-      });
+        { 
+          model: Department, 
+          as: 'targetDepartment',
+          attributes: ['name', 'code'] 
+        },
+        { 
+          model: User, 
+          as: 'distributedBy',
+          attributes: ['name', 'email'] 
+        },
+        { 
+          model: User, 
+          as: 'receivedBy',
+          attributes: ['name', 'email'] 
+        },
+        {
+          model: Bottle,
+          through: 'BatchBottles'
+        }
+      ]
+    });
 
     if (!batch) {
       return res.status(404).json({ message: 'Không tìm thấy lô' });

@@ -1,58 +1,62 @@
-const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const userSchema = mongoose.Schema(
-  {
+module.exports = (sequelize, DataTypes) => {
+  const User = sequelize.define('User', {
     name: {
-      type: String,
-      required: [true, 'Vui lòng nhập tên'],
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: { msg: 'Vui lòng nhập tên' }
+      }
     },
     email: {
-      type: String,
-      required: [true, 'Vui lòng nhập email'],
+      type: DataTypes.STRING,
+      allowNull: false,
       unique: true,
-      trim: true,
-      match: [
-        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-        'Vui lòng nhập email hợp lệ',
-      ],
+      validate: {
+        notEmpty: { msg: 'Vui lòng nhập email' },
+        isEmail: { msg: 'Vui lòng nhập email hợp lệ' }
+      }
     },
     password: {
-      type: String,
-      required: [true, 'Vui lòng nhập mật khẩu'],
-      minlength: [6, 'Mật khẩu phải có ít nhất 6 ký tự'],
-    },
-    department: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Department',
-      required: [true, 'Vui lòng chọn khoa'],
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: { msg: 'Vui lòng nhập mật khẩu' },
+        len: {
+          args: [6, 100],
+          msg: 'Mật khẩu phải có ít nhất 6 ký tự'
+        }
+      }
     },
     isAdmin: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
-  },
-  {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    }
+    // departmentId is optional now and will be automatically added by Sequelize association
+  }, {
     timestamps: true,
-  }
-);
+    hooks: {
+      beforeCreate: async (user) => {
+        if (user.password) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.password, salt);
+        }
+      },
+      beforeUpdate: async (user) => {
+        if (user.changed('password')) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.password, salt);
+        }
+      }
+    }
+  });
 
-// Encrypt password before saving to DB
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    next();
-  }
+  // Instance method to match password
+  User.prototype.matchPassword = async function(enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+  };
 
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
-
-// Match password with entered password
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+  return User;
 };
-
-const User = mongoose.model('User', userSchema);
-
-module.exports = User;

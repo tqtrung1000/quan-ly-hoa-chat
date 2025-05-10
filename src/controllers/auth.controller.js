@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/user.model');
+const { User, Department } = require('../models/index');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -16,29 +16,35 @@ const registerUser = async (req, res) => {
     const { name, email, password, department, isAdmin } = req.body;
 
     // Check if user exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ where: { email } });
 
     if (userExists) {
       return res.status(400).json({ message: 'Người dùng đã tồn tại' });
     }
 
-    // Create user
-    const user = await User.create({
+    // Create user (department is now optional)
+    const userData = {
       name,
       email,
       password,
-      department,
       isAdmin: isAdmin || false,
-    });
+    };
+
+    // Only add departmentId if it's provided
+    if (department) {
+      userData.departmentId = department;
+    }
+
+    const user = await User.create(userData);
 
     if (user) {
       res.status(201).json({
-        _id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
-        department: user.department,
+        departmentId: user.departmentId || null,
         isAdmin: user.isAdmin,
-        token: generateToken(user._id),
+        token: generateToken(user.id),
       });
     } else {
       res.status(400).json({ message: 'Dữ liệu người dùng không hợp lệ' });
@@ -57,16 +63,22 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     // Check for user email
-    const user = await User.findOne({ email }).populate('department', 'name code');
+    const user = await User.findOne({ 
+      where: { email },
+      include: [{
+        model: Department,
+        attributes: ['name', 'code']
+      }]
+    });
 
     if (user && (await user.matchPassword(password))) {
       res.json({
-        _id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
-        department: user.department,
+        department: user.Department, // Sequelize will capitalize the association
         isAdmin: user.isAdmin,
-        token: generateToken(user._id),
+        token: generateToken(user.id),
       });
     } else {
       res.status(401).json({ message: 'Email hoặc mật khẩu không hợp lệ' });
@@ -82,14 +94,19 @@ const loginUser = async (req, res) => {
 // @access  Private
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate('department', 'name code');
+    const user = await User.findByPk(req.user.id, {
+      include: [{
+        model: Department,
+        attributes: ['name', 'code']
+      }]
+    });
 
     if (user) {
       res.json({
-        _id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
-        department: user.department,
+        department: user.Department,
         isAdmin: user.isAdmin,
       });
     } else {
@@ -106,7 +123,12 @@ const getUserProfile = async (req, res) => {
 // @access  Private/Admin
 const getUsers = async (req, res) => {
   try {
-    const users = await User.find({}).populate('department', 'name code');
+    const users = await User.findAll({
+      include: [{
+        model: Department,
+        attributes: ['name', 'code']
+      }]
+    });
     res.json(users);
   } catch (error) {
     console.error(error);

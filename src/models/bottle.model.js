@@ -1,119 +1,126 @@
-const mongoose = require('mongoose');
-
-const bottleSchema = mongoose.Schema(
-  {
+module.exports = (sequelize, DataTypes) => {
+  const Bottle = sequelize.define('Bottle', {
     code: {
-      type: String,
-      required: [true, 'Vui lòng nhập mã chai'],
+      type: DataTypes.STRING,
+      allowNull: false,
       unique: true,
-      trim: true,
+      validate: {
+        notEmpty: { msg: 'Vui lòng nhập mã chai' }
+      }
     },
     status: {
-      type: String,
-      required: true,
-      enum: ['available', 'distributed', 'returned'],
-      default: 'available',
-    },
-    currentDepartment: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Department',
-    },
-    currentUser: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      type: DataTypes.ENUM('available', 'distributed', 'returned'),
+      allowNull: false,
+      defaultValue: 'available'
     },
     batchId: {
-      type: String,
-      trim: true,
-    },
-    history: [
-      {
-        action: {
-          type: String,
-          enum: ['distributed', 'returned'],
-          required: true,
-        },
-        timestamp: {
-          type: Date,
-          default: Date.now,
-        },
-        department: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Department',
-          required: true,
-        },
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User',
-          required: true,
-        },
-        batchId: {
-          type: String,
-          trim: true,
-        },
-        notes: {
-          type: String,
-          trim: true,
-        },
+      type: DataTypes.STRING,
+      allowNull: true
+    }
+    // currentDepartmentId and currentUserId will be added by associations
+  }, {
+    timestamps: true
+  });
+
+  // Setup additional models needed for the history
+  const initHistory = (sequelize, DataTypes) => {
+    const BottleHistory = sequelize.define('BottleHistory', {
+      action: {
+        type: DataTypes.ENUM('distributed', 'returned'),
+        allowNull: false
       },
-    ],
-  },
-  {
-    timestamps: true,
-  }
-);
+      batchId: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      notes: {
+        type: DataTypes.TEXT,
+        allowNull: true
+      }
+    }, {
+      timestamps: true, // This will give us createdAt which serves as timestamp
+      updatedAt: false  // We don't need updatedAt for history entries
+    });
 
-// Methods
+    // Associations for history will be set up in the model index file
+    return BottleHistory;
+  };
 
-// Mark bottle as distributed
-bottleSchema.methods.distribute = function (departmentId, userId, batchId, notes = '') {
-  this.status = 'distributed';
-  this.currentDepartment = departmentId;
-  this.currentUser = userId;
-  this.batchId = batchId;
+  // Methods
   
-  this.history.push({
-    action: 'distributed',
-    department: departmentId,
-    user: userId,
-    batchId,
-    notes,
-  });
+  // Mark bottle as distributed
+  Bottle.prototype.distribute = async function(departmentId, userId, batchId, notes = '') {
+    const BottleHistory = sequelize.models.BottleHistory;
+    
+    this.status = 'distributed';
+    this.currentDepartmentId = departmentId;
+    this.currentUserId = userId;
+    this.batchId = batchId;
+    
+    await this.save();
+    
+    // Create history record
+    await BottleHistory.create({
+      action: 'distributed',
+      bottleId: this.id,
+      departmentId: departmentId,
+      userId: userId,
+      batchId: batchId,
+      notes: notes
+    });
+    
+    return this;
+  };
   
-  return this.save();
+  // Mark bottle as returned
+  Bottle.prototype.returnBottle = async function(userId, notes = '') {
+    const BottleHistory = sequelize.models.BottleHistory;
+    
+    const previousDepartmentId = this.currentDepartmentId;
+    const previousBatchId = this.batchId;
+    
+    this.status = 'available';
+    this.currentDepartmentId = null;
+    this.currentUserId = null;
+    this.batchId = null;
+    
+    await this.save();
+    
+    // Create history record
+    await BottleHistory.create({
+      action: 'returned',
+      bottleId: this.id,
+      departmentId: previousDepartmentId,
+      userId: userId,
+      batchId: previousBatchId,
+      notes: notes
+    });
+    
+    return this;
+  };
+  
+  // Method to get last distribution
+  Bottle.prototype.getLastDistribution = async function() {
+    const BottleHistory = sequelize.models.BottleHistory;
+    
+    const distributions = await BottleHistory.findAll({
+      where: {
+        bottleId: this.id,
+        action: 'distributed'
+      },
+      order: [['createdAt', 'DESC']],
+      limit: 1,
+      include: [
+        { model: sequelize.models.Department },
+        { model: sequelize.models.User }
+      ]
+    });
+    
+    return distributions.length ? distributions[0] : null;
+  };
+
+  // Also define the history model
+  const BottleHistory = initHistory(sequelize, DataTypes);
+  
+  return Bottle;
 };
-
-// Mark bottle as returned
-bottleSchema.methods.returnBottle = function (userId, notes = '') {
-  const previousDepartment = this.currentDepartment;
-  const previousBatchId = this.batchId;
-  
-  this.status = 'available';
-  this.currentDepartment = null;
-  this.currentUser = null;
-  this.batchId = null;
-  
-  this.history.push({
-    action: 'returned',
-    department: previousDepartment,
-    user: userId,
-    batchId: previousBatchId,
-    notes,
-  });
-  
-  return this.save();
-};
-
-// Get last distribution data
-bottleSchema.virtual('lastDistribution').get(function () {
-  const distributions = this.history.filter(record => record.action === 'distributed');
-  return distributions.length ? distributions[distributions.length - 1] : null;
-});
-
-// Set to ensure virtuals are included when converting to JSON
-bottleSchema.set('toJSON', { virtuals: true });
-bottleSchema.set('toObject', { virtuals: true });
-
-const Bottle = mongoose.model('Bottle', bottleSchema);
-
-module.exports = Bottle;

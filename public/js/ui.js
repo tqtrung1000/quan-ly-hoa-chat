@@ -341,13 +341,13 @@ class UIManager {
             const item = document.createElement('div');
             item.textContent = `${dept.name} (${dept.code})`;
             item.className = 'search-item';
-            item.dataset.id = dept._id;
+            item.dataset.id = dept.id || dept._id;
             item.dataset.name = dept.name;
             item.dataset.code = dept.code;
             
             item.addEventListener('click', () => {
               selectedDepartment.textContent = `${dept.name} (${dept.code})`;
-              departmentIdInput.value = dept._id;
+              departmentIdInput.value = dept.id || dept._id;
               departmentSearch.value = '';
               departmentResults.innerHTML = '';
               
@@ -500,7 +500,7 @@ class UIManager {
       
       // Filter users by department
       const departmentUsers = users.filter(user => 
-        user.department && user.department._id === departmentId
+        user.department && (user.department._id === departmentId || user.department.id === departmentId)
       );
       
       if (departmentUsers.length === 0) {
@@ -513,7 +513,7 @@ class UIManager {
       
       departmentUsers.forEach(user => {
         const option = document.createElement('option');
-        option.value = user._id;
+        option.value = user.id || user._id;
         option.text = user.name;
         selectElement.add(option);
       });
@@ -701,7 +701,7 @@ class UIManager {
           viewButton.className = 'btn btn-sm';
           viewButton.textContent = 'Xem';
           viewButton.addEventListener('click', () => {
-            this.showDepartmentDetails(dept._id);
+            this.showDepartmentDetails(dept.id || dept._id);
           });
           
           actionsCell.appendChild(viewButton);

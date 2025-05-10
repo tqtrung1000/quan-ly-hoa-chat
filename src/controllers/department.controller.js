@@ -1,5 +1,5 @@
-const Department = require('../models/department.model');
-const Bottle = require('../models/bottle.model');
+const { Department, Bottle } = require('../models/index');
+const { Op } = require('sequelize');
 
 // @desc    Create new department
 // @route   POST /api/departments
@@ -10,7 +10,12 @@ const createDepartment = async (req, res) => {
 
     // Check if department with name or code already exists
     const departmentExists = await Department.findOne({
-      $or: [{ name }, { code }],
+      where: {
+        [Op.or]: [
+          { name },
+          { code }
+        ]
+      }
     });
 
     if (departmentExists) {
@@ -41,7 +46,7 @@ const createDepartment = async (req, res) => {
 // @access  Private
 const getDepartments = async (req, res) => {
   try {
-    const departments = await Department.find({});
+    const departments = await Department.findAll();
     res.json(departments);
   } catch (error) {
     console.error(error);
@@ -54,7 +59,7 @@ const getDepartments = async (req, res) => {
 // @access  Private
 const getDepartmentById = async (req, res) => {
   try {
-    const department = await Department.findById(req.params.id);
+    const department = await Department.findByPk(req.params.id);
 
     if (department) {
       res.json(department);
@@ -74,7 +79,7 @@ const updateDepartment = async (req, res) => {
   try {
     const { name, code, description } = req.body;
 
-    const department = await Department.findById(req.params.id);
+    const department = await Department.findByPk(req.params.id);
 
     if (!department) {
       return res.status(404).json({ message: 'Không tìm thấy khoa' });
@@ -83,8 +88,21 @@ const updateDepartment = async (req, res) => {
     if (name !== department.name || code !== department.code) {
       // Check if another department has the same name or code
       const conflictingDepartment = await Department.findOne({
-        $or: [{ name }, { code }],
-        _id: { $ne: req.params.id },
+        where: {
+          [Op.and]: [
+            {
+              [Op.or]: [
+                { name },
+                { code }
+              ]
+            },
+            {
+              id: {
+                [Op.ne]: req.params.id
+              }
+            }
+          ]
+        }
       });
 
       if (conflictingDepartment) {
@@ -111,20 +129,22 @@ const updateDepartment = async (req, res) => {
 // @access  Private
 const getUnreturnedCount = async (req, res) => {
   try {
-    const department = await Department.findById(req.params.id);
+    const department = await Department.findByPk(req.params.id);
 
     if (!department) {
       return res.status(404).json({ message: 'Không tìm thấy khoa' });
     }
 
-    const unreturnedBottles = await Bottle.find({
-      currentDepartment: req.params.id,
-      status: 'distributed',
+    const unreturnedBottles = await Bottle.findAll({
+      where: {
+        currentDepartmentId: req.params.id,
+        status: 'distributed'
+      }
     });
 
     res.json({
       department: {
-        _id: department._id,
+        id: department.id,
         name: department.name,
         code: department.code,
       },
@@ -147,11 +167,13 @@ const searchDepartments = async (req, res) => {
       return res.status(400).json({ message: 'Từ khóa tìm kiếm là bắt buộc' });
     }
 
-    const departments = await Department.find({
-      $or: [
-        { name: { $regex: searchTerm, $options: 'i' } },
-        { code: { $regex: searchTerm, $options: 'i' } },
-      ],
+    const departments = await Department.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.like]: `%${searchTerm}%` } },
+          { code: { [Op.like]: `%${searchTerm}%` } }
+        ]
+      }
     });
 
     res.json(departments);

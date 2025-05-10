@@ -1,8 +1,9 @@
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const { testConnection, sequelize } = require('./config/database');
+const { syncDatabase } = require('./models/index');
 const authRoutes = require('./routes/auth.routes');
 const departmentRoutes = require('./routes/department.routes');
 const bottleRoutes = require('./routes/bottle.routes');
@@ -26,18 +27,28 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log('Connected to MongoDB');
+// Connect to SQLite and start server
+const startServer = async () => {
+  try {
+    // Test database connection
+    const isConnected = await testConnection();
+    
+    if (!isConnected) {
+      console.error('Failed to connect to SQLite database');
+      return;
+    }
+    
+    // Sync models with database
+    await syncDatabase();
+    
+    // Start the server
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
-  })
-  .catch((error) => {
-    console.error('Failed to connect to MongoDB:', error.message);
-  });
+  } catch (error) {
+    console.error('Server startup error:', error.message);
+  }
+};
+
+// Start the server
+startServer();
