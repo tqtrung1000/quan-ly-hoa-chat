@@ -27,20 +27,17 @@ document.addEventListener('DOMContentLoaded', () => {
  * Set up mock data for development without backend connection
  * This allows the frontend to be tested without a running backend
  */
-function setupMockData() {
-  // Always set up mock data immediately to avoid errors
-  console.log('Setting up mock data for development - this will be used if backend is not available');
-  setupApiMocks();
+async function setupMockData() { // Made async
+  // Check if backend is actually available FIRST
+  const isConnected = await checkBackendConnection(); // Made await
   
-  // Then check if backend is actually available
-  checkBackendConnection()
-    .then(isConnected => {
-      if (isConnected) {
-        console.log('Backend connection detected - will use real API when available');
-      } else {
-        console.log('Backend not detected - will use mock data');
-      }
-    });
+  if (isConnected) {
+    console.log('Backend connection detected - will use real API.');
+    // Do NOT call setupApiMocks() if backend is connected
+  } else {
+    console.log('Backend not detected - setting up mock data.');
+    setupApiMocks(); // Only setup mocks if backend is not connected
+  }
 }
 
 /**
@@ -59,9 +56,16 @@ async function checkBackendConnection() {
     });
     
     clearTimeout(timeoutId);
-    return response.ok;
+    // If response is OK (2xx) or 401 (Unauthorized, but backend is alive), consider it connected for login purposes.
+    // The actual API calls will handle auth properly.
+    if (response.ok || response.status === 401) {
+      return true; 
+    }
+    // For other errors (500, network issues), treat as not connected.
+    console.log(`Backend connection check received status: ${response.status}`);
+    return false;
   } catch (error) {
-    console.log('Backend connection check failed:', error.message);
+    console.log('Backend connection check failed (exception):', error.message);
     return false;
   }
 }
@@ -81,11 +85,11 @@ function setupApiMocks() {
       { _id: 'dept5', name: 'Laboratory', code: 'LAB', bottlesOut: 0, description: 'Main Laboratory' }
     ],
     users: [
-      { _id: 'user1', name: 'Admin User', email: 'admin@hospital.org', department: { _id: 'dept5', name: 'Laboratory', code: 'LAB' }, isAdmin: true },
-      { _id: 'user2', name: 'John Doe', email: 'john@hospital.org', department: { _id: 'dept1', name: 'Cardiology', code: 'CARD' }, isAdmin: false },
-      { _id: 'user3', name: 'Jane Smith', email: 'jane@hospital.org', department: { _id: 'dept2', name: 'Neurology', code: 'NEUR' }, isAdmin: false },
-      { _id: 'user4', name: 'Robert Johnson', email: 'robert@hospital.org', department: { _id: 'dept3', name: 'Pediatrics', code: 'PED' }, isAdmin: false },
-      { _id: 'user5', name: 'Sarah Lee', email: 'sarah@hospital.org', department: { _id: 'dept4', name: 'Emergency', code: 'ER' }, isAdmin: false }
+      { _id: 'user1', name: 'Admin User', password: 'password', department: { _id: 'dept5', name: 'Laboratory', code: 'LAB' }, isAdmin: true }, // Reverted
+      { _id: 'user2', name: 'John Doe', password: 'password', department: { _id: 'dept1', name: 'Cardiology', code: 'CARD' }, isAdmin: false }, // Reverted
+      { _id: 'user3', name: 'Jane Smith', password: 'password', department: { _id: 'dept2', name: 'Neurology', code: 'NEUR' }, isAdmin: false }, // Reverted
+      { _id: 'user4', name: 'Robert Johnson', password: 'password', department: { _id: 'dept3', name: 'Pediatrics', code: 'PED' }, isAdmin: false }, // Reverted
+      { _id: 'user5', name: 'Sarah Lee', password: 'password', department: { _id: 'dept4', name: 'Emergency', code: 'ER' }, isAdmin: false } // Reverted
     ],
     bottles: [],
     batches: []
@@ -160,16 +164,16 @@ function setupApiMocks() {
   }
 
   // Override API methods with mock implementations
-  api.login = async (email, password) => {
+  api.login = async (name, password) => { // Reverted
     // Simple validation
-    if (!email || !password) {
-      throw new Error('Email and password are required');
+    if (!name || !password) { 
+      throw new Error('Tên đăng nhập và mật khẩu là bắt buộc'); 
     }
     
-    // Find user by email
-    const user = mockData.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    // Find user by name
+    const user = mockData.users.find(u => u.name.toLowerCase() === name.toLowerCase()); // Reverted
     
-    if (!user) {
+    if (!user) { // Mock: any password for found user is fine
       throw new Error('Invalid credentials');
     }
     
@@ -183,16 +187,11 @@ function setupApiMocks() {
     return user;
   };
   
-  api.register = async (userData) => {
-    if (!userData.name || !userData.email || !userData.password || !userData.department) {
+  api.register = async (userData) => { // This mock function is no longer used as register is removed
+    if (!userData.name || !userData.password || !userData.department) { // Reverted
       throw new Error('All fields are required');
     }
-    
-    // Check if user already exists
-    if (mockData.users.some(u => u.email.toLowerCase() === userData.email.toLowerCase())) {
-      throw new Error('User already exists with this email');
-    }
-    
+        
     // Find department
     const department = mockData.departments.find(d => d._id === userData.department);
     
@@ -202,10 +201,10 @@ function setupApiMocks() {
     
     const newUser = {
       _id: `user${mockData.users.length + 1}`,
-      name: userData.name,
-      email: userData.email,
+      name: userData.name, // Reverted
+      password: userData.password, // Reverted
       department: department,
-      isAdmin: userData.isAdmin || false
+      isAdmin: userData.isAdmin || false // Reverted
     };
     
     mockData.users.push(newUser);

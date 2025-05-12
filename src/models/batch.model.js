@@ -23,9 +23,13 @@ module.exports = (sequelize, DataTypes) => {
     notes: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    recipientName: { // Thêm trường tên người nhận dạng văn bản
+      type: DataTypes.STRING,
+      allowNull: true
     }
     // Foreign keys will be added by associations:
-    // sourceDepartmentId, targetDepartmentId, distributedById, receivedById
+    // sourceDepartmentId, targetDepartmentId, distributedById, receivedById (sẽ cần cho phép null)
   }, {
     timestamps: true
   });

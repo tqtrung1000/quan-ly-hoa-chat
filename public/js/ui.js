@@ -166,6 +166,149 @@ class UIManager {
         }
       });
     }
+
+    // Set up Add User modal trigger
+    const addUserBtn = document.getElementById('add-user-btn');
+    if (addUserBtn) {
+      addUserBtn.addEventListener('click', () => {
+        document.getElementById('add-user-modal').classList.remove('hidden');
+        // Optionally clear form fields if modal was previously opened
+        const addUserForm = document.getElementById('add-user-form');
+        if (addUserForm) addUserForm.reset();
+      });
+    }
+
+    // Set up Add User form
+    const addUserForm = document.getElementById('add-user-form');
+    if (addUserForm) {
+      addUserForm.addEventListener('submit', (e) => this.handleAddUserForm(e));
+    }
+
+    // Set up Change Password modal trigger
+    const changePasswordBtn = document.getElementById('change-password-btn');
+    if (changePasswordBtn) {
+      changePasswordBtn.addEventListener('click', () => {
+        console.log('Change Password button clicked. Showing modal...'); // Added log
+        document.getElementById('change-password-modal').classList.remove('hidden');
+        // Optionally clear form fields
+        const changePasswordForm = document.getElementById('change-password-form');
+        if (changePasswordForm) changePasswordForm.reset();
+      });
+    }
+
+    // Set up Change Password form
+    const changePasswordForm = document.getElementById('change-password-form');
+    if (changePasswordForm) {
+      changePasswordForm.addEventListener('submit', (e) => this.handleChangePasswordForm(e));
+    }
+
+    // Set up Add Department modal trigger
+    const addDepartmentBtn = document.getElementById('add-department-btn');
+    if (addDepartmentBtn) {
+      addDepartmentBtn.addEventListener('click', () => {
+        document.getElementById('add-department-modal').classList.remove('hidden');
+        const addDepartmentForm = document.getElementById('add-department-form');
+        if (addDepartmentForm) addDepartmentForm.reset();
+      });
+    }
+
+    // Set up Add Department form
+    const addDepartmentForm = document.getElementById('add-department-form');
+    if (addDepartmentForm) {
+      addDepartmentForm.addEventListener('submit', (e) => this.handleAddDepartmentForm(e));
+    }
+  }
+
+  /**
+   * Handle the submission of the Add User form
+   * @param {Event} event - Form submit event
+   */
+  async handleAddUserForm(event) {
+    event.preventDefault();
+    const name = document.getElementById('new-user-name').value.trim(); // Reverted to name
+    // const email = document.getElementById('new-user-email').value.trim(); // Email removed
+    const password = document.getElementById('new-user-password').value; // Reverted to password
+    const isAdmin = document.getElementById('new-user-isAdmin').checked; // Reverted to isAdmin
+
+    if (!name || !password) { // Reverted validation
+      showToast('Vui lòng nhập tên đăng nhập và mật khẩu', 'error'); 
+      return;
+    }
+
+    try {
+      await api.createUserByAdmin({ name, password, isAdmin }); // Reverted to English fields
+      showToast('Thêm người dùng thành công', 'success');
+      document.getElementById('add-user-modal').classList.add('hidden');
+      document.getElementById('add-user-form').reset();
+      this.loadUsersData(); // Refresh the user list
+    } catch (error) {
+      showToast('Lỗi khi thêm người dùng: ' + error.message, 'error');
+    }
+  }
+  
+  /**
+   * Handle the submission of the Add Department form
+   * @param {Event} event - Form submit event
+   */
+  async handleAddDepartmentForm(event) {
+    event.preventDefault();
+    const name = document.getElementById('new-department-name').value.trim();
+    const code = document.getElementById('new-department-code').value.trim();
+    const description = document.getElementById('new-department-description').value.trim();
+
+    if (!name || !code) {
+      showToast('Vui lòng nhập tên khoa và mã khoa', 'error');
+      return;
+    }
+
+    try {
+      await api.createDepartment({ name, code, description });
+      showToast('Thêm khoa thành công', 'success');
+      document.getElementById('add-department-modal').classList.add('hidden');
+      document.getElementById('add-department-form').reset();
+      this.loadDepartmentsData(); // Refresh the department list
+      // Also refresh dashboard data if it's the current page, as department count might change
+      if (this.currentPage === 'dashboard') {
+        this.loadDashboardData();
+      }
+    } catch (error) {
+      showToast('Lỗi khi thêm khoa: ' + error.message, 'error');
+    }
+  }
+
+  /**
+   * Handle the submission of the Change Password form
+   * @param {Event} event - Form submit event
+   */
+  async handleChangePasswordForm(event) {
+    event.preventDefault();
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmNewPassword = document.getElementById('confirm-new-password').value;
+
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      showToast('Vui lòng nhập đầy đủ các trường', 'error');
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      showToast('Mật khẩu mới và xác nhận mật khẩu không khớp', 'error');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      showToast('Mật khẩu mới phải có ít nhất 6 ký tự', 'error');
+      return;
+    }
+
+    try {
+      await api.updateCurrentUserPassword(currentPassword, newPassword);
+      showToast('Đổi mật khẩu thành công', 'success');
+      document.getElementById('change-password-modal').classList.add('hidden');
+      document.getElementById('change-password-form').reset();
+    } catch (error) {
+      showToast('Lỗi đổi mật khẩu: ' + error.message, 'error');
+    }
   }
   
   /**
@@ -312,7 +455,7 @@ class UIManager {
     const addBottleBtn = document.querySelector('.add-bottle-btn');
     const bottleInput = document.querySelector('.bottle-code-input');
     const bottleList = document.getElementById('bottle-list');
-    const recipientSelect = document.getElementById('distribute-recipient');
+    const recipientInput = document.getElementById('distribute-recipient'); // Đổi tên biến
     
     // Department search
     if (departmentSearch && departmentResults) {
@@ -351,8 +494,8 @@ class UIManager {
               departmentSearch.value = '';
               departmentResults.innerHTML = '';
               
-              // Load users for this department
-              this.loadDepartmentUsers(dept._id, recipientSelect);
+              // Không cần loadDepartmentUsers nữa
+              // this.loadDepartmentUsers(dept._id, recipientSelect); 
             });
             
             departmentResults.appendChild(item);
@@ -390,7 +533,7 @@ class UIManager {
         e.preventDefault();
         
         const departmentId = departmentIdInput.value;
-        const userId = recipientSelect.value;
+        const recipientName = recipientInput.value.trim(); // Lấy tên người nhận từ input
         const notes = document.getElementById('distribute-notes').value;
         
         // Get bottle codes from the list
@@ -403,8 +546,8 @@ class UIManager {
           return;
         }
         
-        if (!userId) {
-          showToast('Vui lòng chọn người nhận', 'error');
+        if (!recipientName) { // Kiểm tra recipientName thay vì userId
+          showToast('Vui lòng nhập tên người nhận', 'error');
           return;
         }
         
@@ -416,7 +559,7 @@ class UIManager {
         try {
           const result = await api.distributeBottles({
             departmentId,
-            userId,
+            recipientName, // Gửi recipientName
             bottles: bottleCodes,
             notes
           });
@@ -426,7 +569,7 @@ class UIManager {
           // Clear the form
           selectedDepartment.textContent = '';
           departmentIdInput.value = '';
-          recipientSelect.innerHTML = '<option value="">Chọn Người Nhận</option>';
+          recipientInput.value = ''; // Xóa nội dung ô nhập tên người nhận
           bottleList.innerHTML = '';
           document.getElementById('distribute-notes').value = '';
           
@@ -480,46 +623,6 @@ class UIManager {
     list.appendChild(listItem);
     input.value = '';
     input.focus();
-  }
-  
-  /**
-   * Load users for a specific department
-   * @param {string} departmentId - Department ID
-   * @param {HTMLElement} selectElement - Select element to populate
-   */
-  async loadDepartmentUsers(departmentId, selectElement) {
-    if (!selectElement) return;
-    
-    // Clear existing options except for the placeholder
-    while (selectElement.options.length > 1) {
-      selectElement.remove(1);
-    }
-    
-    try {
-      const users = await api.getUsers();
-      
-      // Filter users by department
-      const departmentUsers = users.filter(user => 
-        user.department && (user.department._id === departmentId || user.department.id === departmentId)
-      );
-      
-      if (departmentUsers.length === 0) {
-        const option = document.createElement('option');
-        option.text = 'Không tìm thấy người dùng nào cho khoa này';
-        option.disabled = true;
-        selectElement.add(option);
-        return;
-      }
-      
-      departmentUsers.forEach(user => {
-        const option = document.createElement('option');
-        option.value = user.id || user._id;
-        option.text = user.name;
-        selectElement.add(option);
-      });
-    } catch (error) {
-      showToast('Lỗi khi tải người dùng khoa: ' + error.message, 'error');
-    }
   }
   
   /**
@@ -820,6 +923,7 @@ class UIManager {
    */
   async loadBottlesData() {
     const bottlesTable = document.getElementById('bottles-table');
+    const totalAvailableBottlesEl = document.getElementById('total-available-bottles');
     const statusFilter = document.getElementById('bottle-status-filter');
     const searchInput = document.getElementById('bottle-search');
     
@@ -827,6 +931,12 @@ class UIManager {
     
     try {
       const bottles = await api.getBottles();
+
+      // Calculate and display total available bottles
+      if (totalAvailableBottlesEl) {
+        const availableCount = bottles.filter(b => b.status === 'available').length;
+        totalAvailableBottlesEl.textContent = availableCount;
+      }
       
       const renderBottles = (filteredBottles) => {
         bottlesTable.innerHTML = '';
@@ -938,7 +1048,7 @@ class UIManager {
       if (users.length === 0) {
         const row = document.createElement('tr');
         const cell = document.createElement('td');
-        cell.colSpan = 4;
+        cell.colSpan = 3; // Colspan is already 3 (Name, Role, Actions)
         cell.textContent = 'Không tìm thấy người dùng nào';
         cell.className = 'text-center';
         row.appendChild(cell);
@@ -950,21 +1060,49 @@ class UIManager {
         const row = document.createElement('tr');
         
         const nameCell = document.createElement('td');
-        nameCell.textContent = user.name;
+        nameCell.textContent = user.name; // Reverted to name
         
-        const emailCell = document.createElement('td');
-        emailCell.textContent = user.email;
+        // const emailCell = document.createElement('td'); // Email cell removed
+        // emailCell.textContent = user.email; // Email cell removed
         
-        const deptCell = document.createElement('td');
-        deptCell.textContent = user.department?.name || 'N/A';
+        // const deptCell = document.createElement('td'); // Removed department cell
+        // deptCell.textContent = user.department?.name || 'N/A'; // Removed
         
         const roleCell = document.createElement('td');
-        roleCell.textContent = user.isAdmin ? 'Quản trị viên' : 'Người dùng';
+        roleCell.textContent = user.isAdmin ? 'Quản trị viên' : 'Người dùng'; // Reverted to isAdmin
+
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'action-cell';
+
+        const resetButton = document.createElement('button');
+        resetButton.className = 'btn btn-sm btn-outline';
+        resetButton.textContent = 'Đặt lại MK';
+        resetButton.title = 'Đặt lại mật khẩu';
+        if (user.id === auth.getUser()?.id) { // Prevent admin from resetting their own password via this button
+            resetButton.disabled = true;
+            resetButton.title = 'Dùng chức năng "Đổi mật khẩu" cá nhân';
+        } else {
+            resetButton.addEventListener('click', async () => {
+                const newPassword = prompt(`Nhập mật khẩu mới cho người dùng "${user.name}":`); // Reverted to name
+                if (newPassword && newPassword.trim() !== '') {
+                    try {
+                        await api.resetPasswordByAdmin(user.id, newPassword.trim());
+                        showToast(`Đặt lại mật khẩu cho ${user.name} thành công.`, 'success'); // Reverted to name
+                    } catch (error) {
+                        showToast(`Lỗi đặt lại mật khẩu: ${error.message}`, 'error');
+                    }
+                } else if (newPassword !== null) { // Not cancelled, but empty
+                    showToast('Mật khẩu mới không được để trống.', 'warning');
+                }
+            });
+        }
+        actionsCell.appendChild(resetButton);
         
         row.appendChild(nameCell);
-        row.appendChild(emailCell);
-        row.appendChild(deptCell);
+        // row.appendChild(emailCell); // Email cell removed
+        // row.appendChild(deptCell); // Removed department cell
         row.appendChild(roleCell);
+        row.appendChild(actionsCell); // Added actions cell
         
         usersTable.appendChild(row);
       });

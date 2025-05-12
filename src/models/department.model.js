@@ -34,9 +34,9 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   // Method to update bottlesOut count
-  Department.prototype.updateBottleCount = async function(count) {
+  Department.prototype.updateBottleCount = async function(count, options = {}) { // Thêm options
     this.bottlesOut += count;
-    return await this.save();
+    return await this.save(options); // Truyền options (chứa transaction) vào save
   };
 
   return Department;

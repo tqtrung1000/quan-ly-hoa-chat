@@ -14,16 +14,13 @@
       <div class="logo">
         <h1><i class="fas fa-vial"></i> Hệ Thống Quản Lý Chai Máu</h1>
       </div>
-      <div class="tabs">
-        <button id="login-tab" class="tab active">Đăng Nhập</button>
-        <button id="register-tab" class="tab">Đăng Ký</button>
-      </div>
+      <!-- Tabs Div Removed -->
       
       <!-- Login Form -->
       <form id="login-form" class="form">
         <div class="form-group">
-          <label for="login-email">Email</label>
-          <input type="email" id="login-email" required>
+          <label for="login-name">Tên đăng nhập</label> 
+          <input type="text" id="login-name" required> 
         </div>
         <div class="form-group">
           <label for="login-password">Mật khẩu</label>
@@ -32,28 +29,7 @@
         <button type="submit" class="btn btn-primary">Đăng Nhập</button>
       </form>
       
-      <!-- Register Form -->
-      <form id="register-form" class="form hidden">
-        <div class="form-group">
-          <label for="register-name">Tên</label>
-          <input type="text" id="register-name" required>
-        </div>
-        <div class="form-group">
-          <label for="register-email">Email</label>
-          <input type="email" id="register-email" required>
-        </div>
-        <div class="form-group">
-          <label for="register-password">Mật khẩu</label>
-          <input type="password" id="register-password" required>
-        </div>
-        <div class="form-group">
-          <label for="register-department">Khoa (Tùy chọn)</label>
-          <select id="register-department">
-            <option value="">Chọn Khoa</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Đăng Ký</button>
-      </form>
+      <!-- Register Form Removed -->
     </div>
     
     <!-- Main App Container -->
@@ -66,6 +42,7 @@
         <div class="user-info">
           <span id="user-name"></span>
           <span id="user-department"></span>
+          <button id="change-password-btn" class="btn btn-outline btn-sm">Đổi Mật Khẩu</button>
           <button id="logout-btn" class="btn btn-outline">Đăng Xuất</button>
         </div>
       </header>
@@ -161,9 +138,7 @@
             
             <div class="form-group">
               <label for="distribute-recipient">Người Nhận</label>
-              <select id="distribute-recipient" required>
-                <option value="">Chọn Người Nhận</option>
-              </select>
+              <input type="text" id="distribute-recipient" placeholder="Nhập tên người nhận" required>
             </div>
             
             <div class="form-group">
@@ -268,6 +243,10 @@
         <!-- Departments Page -->
         <div id="departments-page" class="page hidden">
           <h2>Các Khoa</h2>
+
+          <div class="action-bar admin-only hidden">
+            <button id="add-department-btn" class="btn">Thêm Khoa Mới</button>
+          </div>
           
           <div class="department-search">
             <input type="text" id="department-search-filter" placeholder="Tìm kiếm khoa...">
@@ -286,6 +265,29 @@
               <!-- Department data will be populated here -->
             </tbody>
           </table>
+
+          <!-- Add Department Modal -->
+          <div id="add-department-modal" class="modal hidden">
+            <div class="modal-content">
+              <span class="close-modal">&times;</span>
+              <h3>Thêm Khoa Mới</h3>
+              <form id="add-department-form" class="form">
+                <div class="form-group">
+                  <label for="new-department-name">Tên Khoa</label>
+                  <input type="text" id="new-department-name" required>
+                </div>
+                <div class="form-group">
+                  <label for="new-department-code">Mã Khoa (Viết tắt)</label>
+                  <input type="text" id="new-department-code" required>
+                </div>
+                <div class="form-group">
+                  <label for="new-department-description">Mô tả (Không bắt buộc)</label>
+                  <textarea id="new-department-description" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Thêm Khoa</button>
+              </form>
+            </div>
+          </div>
           
           <div id="department-detail-modal" class="modal hidden">
             <div class="modal-content">
@@ -316,6 +318,13 @@
           
           <div class="action-bar">
             <button id="add-bottle-btn" class="btn">Thêm Chai Mới</button>
+          </div>
+
+          <div class="info-card mb-2">
+            <div class="info-row">
+              <span class="info-label">Tổng Số Chai Chưa Phân Phối (Khả Dụng):</span>
+              <span id="total-available-bottles" class="info-value">Đang tải...</span>
+            </div>
           </div>
           
           <div class="filter-bar">
@@ -360,22 +369,74 @@
         <!-- Manage Users Page (Admin Only) -->
         <div id="users-page" class="page hidden">
           <h2>Quản Lý Người Dùng</h2>
+
+          <div class="action-bar">
+            <button id="add-user-btn" class="btn">Thêm Người Dùng Mới</button>
+          </div>
           
           <table class="data-table">
             <thead>
               <tr>
                 <th>Tên</th>
-                <th>Email</th>
-                <th>Khoa</th>
+                <!-- <th>Email</th> Email header removed -->
+                <!-- <th>Khoa</th> Removed Khoa header -->
                 <th>Vai Trò</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody id="users-table">
               <!-- User data will be populated here -->
             </tbody>
           </table>
+
+          <!-- Add User Modal -->
+          <div id="add-user-modal" class="modal hidden">
+            <div class="modal-content">
+              <span class="close-modal">&times;</span>
+              <h3>Thêm Người Dùng Mới</h3>
+              <form id="add-user-form" class="form">
+                <div class="form-group">
+                  <label for="new-user-name">Tên đăng nhập</label>
+                  <input type="text" id="new-user-name" required>
+                </div>
+                <!-- Email field removed from Add User form -->
+                <div class="form-group">
+                  <label for="new-user-password">Mật khẩu</label>
+                  <input type="password" id="new-user-password" required>
+                </div>
+                <div class="form-group">
+                  <label for="new-user-isAdmin">Là Quản trị viên?</label>
+                  <input type="checkbox" id="new-user-isAdmin">
+                </div>
+                <button type="submit" class="btn btn-primary">Thêm Người Dùng</button>
+              </form>
+            </div>
+          </div>
+
         </div>
       </main>
+      <!-- Change Password Modal -->
+      <div id="change-password-modal" class="modal hidden">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h3>Đổi Mật Khẩu</h3>
+          <form id="change-password-form" class="form">
+            <div class="form-group">
+              <label for="current-password">Mật khẩu hiện tại</label>
+              <input type="password" id="current-password" required>
+            </div>
+            <div class="form-group">
+              <label for="new-password">Mật khẩu mới</label>
+              <input type="password" id="new-password" required>
+            </div>
+            <div class="form-group">
+              <label for="confirm-new-password">Xác nhận mật khẩu mới</label>
+              <input type="password" id="confirm-new-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
   

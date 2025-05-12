@@ -68,21 +68,21 @@ class ApiService {
   }
 
   // Auth endpoints
-  async login(email, password) {
-    const data = await this.request('/auth/login', 'POST', { email, password });
+  async login(name, password) { // Changed email to name
+    const data = await this.request('/auth/login', 'POST', { name, password }); // Changed email to name
     if (data.token) {
       this.setAuthToken(data.token);
     }
     return data;
   }
 
-  async register(userData) {
-    const data = await this.request('/auth/register', 'POST', userData);
-    if (data.token) {
-      this.setAuthToken(data.token);
-    }
-    return data;
-  }
+  // async register(userData) { // Removed register method
+  //   const data = await this.request('/auth/register', 'POST', userData);
+  //   if (data.token) {
+  //     this.setAuthToken(data.token);
+  //   }
+  //   return data;
+  // }
 
   async getUserProfile() {
     return await this.request('/auth/profile');
@@ -90,6 +90,18 @@ class ApiService {
 
   async getUsers() {
     return await this.request('/auth/users');
+  }
+
+  async createUserByAdmin(userData) {
+    return await this.request('/auth/users', 'POST', userData);
+  }
+
+  async resetPasswordByAdmin(userId, newPassword) {
+    return await this.request(`/auth/users/${userId}/reset-password`, 'PUT', { newPassword });
+  }
+
+  async updateCurrentUserPassword(currentPassword, newPassword) {
+    return await this.request('/auth/profile/password', 'PUT', { currentPassword, newPassword });
   }
 
   // Department endpoints
@@ -138,7 +150,7 @@ class ApiService {
     return await this.request('/bottles', 'POST', bottleData);
   }
 
-  async distributeBottles(distributionData) {
+  async distributeBottles(distributionData) { // distributionData giờ sẽ chứa recipientName thay vì userId
     return await this.request('/bottles/distribute', 'POST', distributionData);
   }
 

@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
     batchId: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    currentRecipientName: { // Thêm trường tên người nhận hiện tại
+      type: DataTypes.STRING,
+      allowNull: true
     }
     // currentDepartmentId and currentUserId will be added by associations
   }, {
@@ -28,6 +32,10 @@ module.exports = (sequelize, DataTypes) => {
       action: {
         type: DataTypes.ENUM('distributed', 'returned'),
         allowNull: false
+      },
+      recipientName: { // Thêm trường tên người nhận vào lịch sử
+        type: DataTypes.STRING,
+        allowNull: true
       },
       batchId: {
         type: DataTypes.STRING,
@@ -49,25 +57,27 @@ module.exports = (sequelize, DataTypes) => {
   // Methods
   
   // Mark bottle as distributed
-  Bottle.prototype.distribute = async function(departmentId, userId, batchId, notes = '') {
+  Bottle.prototype.distribute = async function(departmentId, userId, recipientName, batchId, notes = '', transaction) { // Thêm transaction làm tham số
     const BottleHistory = sequelize.models.BottleHistory;
     
     this.status = 'distributed';
     this.currentDepartmentId = departmentId;
-    this.currentUserId = userId;
+    this.currentUserId = userId; // userId có thể là null nếu chỉ có recipientName
+    this.currentRecipientName = recipientName;
     this.batchId = batchId;
     
-    await this.save();
+    await this.save({ transaction }); // Sử dụng transaction
     
     // Create history record
     await BottleHistory.create({
       action: 'distributed',
       bottleId: this.id,
       departmentId: departmentId,
-      userId: userId,
+      userId: userId, // userId có thể là null
+      recipientName: recipientName, // Lưu tên người nhận
       batchId: batchId,
       notes: notes
-    });
+    }, { transaction }); // Sử dụng transaction
     
     return this;
   };
@@ -82,6 +92,7 @@ module.exports = (sequelize, DataTypes) => {
     this.status = 'available';
     this.currentDepartmentId = null;
     this.currentUserId = null;
+    this.currentRecipientName = null; // Xóa tên người nhận khi trả lại
     this.batchId = null;
     
     await this.save();
@@ -91,7 +102,8 @@ module.exports = (sequelize, DataTypes) => {
       action: 'returned',
       bottleId: this.id,
       departmentId: previousDepartmentId,
-      userId: userId,
+      userId: userId, // Người dùng thực hiện hành động trả lại
+      // recipientName không cần thiết ở đây vì đây là hành động trả lại
       batchId: previousBatchId,
       notes: notes
     });
@@ -119,8 +131,6 @@ module.exports = (sequelize, DataTypes) => {
     return distributions.length ? distributions[0] : null;
   };
 
-  // Also define the history model
-  const BottleHistory = initHistory(sequelize, DataTypes);
-  
-  return Bottle;
+  // Return both Bottle and the initHistory function
+  return { Bottle, initHistory };
 };

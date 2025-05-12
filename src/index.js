@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { testConnection, sequelize } = require('./config/database');
-const { syncDatabase } = require('./models/index');
+const { initializeDatabase, sequelize } = require('./config/database'); // Changed testConnection to initializeDatabase
+const { User, syncDatabase } = require('./models/index'); // Added User import
 const authRoutes = require('./routes/auth.routes');
 const departmentRoutes = require('./routes/department.routes');
 const bottleRoutes = require('./routes/bottle.routes');
@@ -30,16 +30,14 @@ app.get('*', (req, res) => {
 // Connect to SQLite and start server
 const startServer = async () => {
   try {
-    // Test database connection
-    const isConnected = await testConnection();
-    
-    if (!isConnected) {
-      console.error('Failed to connect to SQLite database');
-      return;
-    }
+    // Initialize and configure database (includes authentication and PRAGMA settings)
+    await initializeDatabase(); 
     
     // Sync models with database
     await syncDatabase();
+
+    // Create default admin user if it doesn't exist
+    await createDefaultAdmin();
     
     // Start the server
     app.listen(PORT, () => {
@@ -47,6 +45,26 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error('Server startup error:', error.message);
+  }
+};
+
+// Function to create a default admin user
+const createDefaultAdmin = async () => {
+  try {
+    const adminUser = await User.findOne({ where: { name: 'admin' } }); // Reverted to name
+    if (!adminUser) {
+      await User.create({
+        name: 'admin', // Reverted to name
+        // email: 'admin@example.com', // Email field removed
+        password: '123456', // Reverted to password
+        isAdmin: true, // Reverted to isAdmin
+      });
+      console.log('Default admin user "admin" created successfully with the new password.');
+    } else {
+      console.log('Default admin user "admin" already exists. No new admin user was created.');
+    }
+  } catch (error) {
+    console.error('Error creating default admin user:', error.message);
   }
 };
 

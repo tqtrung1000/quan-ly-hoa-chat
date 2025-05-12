@@ -6,9 +6,9 @@ class AuthManager {
     this.user = null;
     this.isAuthenticated = false;
     this.loginForm = document.getElementById('login-form');
-    this.registerForm = document.getElementById('register-form');
-    this.loginTab = document.getElementById('login-tab');
-    this.registerTab = document.getElementById('register-tab');
+    // this.registerForm = document.getElementById('register-form'); // Removed
+    // this.loginTab = document.getElementById('login-tab'); // Removed as tabs are gone
+    // this.registerTab = document.getElementById('register-tab'); // Removed
     this.logoutBtn = document.getElementById('logout-btn');
     this.authContainer = document.getElementById('auth-container');
     this.appContainer = document.getElementById('app-container');
@@ -35,70 +35,70 @@ class AuthManager {
    * Set up all event listeners for auth-related elements
    */
   setupEventListeners() {
-    // Tab switching
-    this.loginTab.addEventListener('click', () => this.switchTab('login'));
-    this.registerTab.addEventListener('click', () => this.switchTab('register'));
+    // Tab switching - Removed
+    // this.loginTab.addEventListener('click', () => this.switchTab('login')); 
+    // this.registerTab.addEventListener('click', () => this.switchTab('register')); // Removed
 
     // Form submissions
     this.loginForm.addEventListener('submit', (e) => this.handleLogin(e));
-    this.registerForm.addEventListener('submit', (e) => this.handleRegister(e));
+    // this.registerForm.addEventListener('submit', (e) => this.handleRegister(e)); // Removed
 
     // Logout button
     this.logoutBtn.addEventListener('click', () => this.logout());
 
-    // Load departments for registration form
-    if (this.registerForm) {
-      this.loadDepartments();
-    }
+    // Load departments for registration form - Removed
+    // if (this.registerForm) {
+    //   this.loadDepartments();
+    // }
   }
 
   /**
-   * Switch between login and register tabs
-   * @param {string} tab - The tab to switch to ('login' or 'register')
+   * Switch between login and register tabs - Method Removed
    */
-  switchTab(tab) {
-    if (tab === 'login') {
-      this.loginTab.classList.add('active');
-      this.registerTab.classList.remove('active');
-      this.loginForm.classList.remove('hidden');
-      this.registerForm.classList.add('hidden');
-    } else {
-      this.loginTab.classList.remove('active');
-      this.registerTab.classList.add('active');
-      this.loginForm.classList.add('hidden');
-      this.registerForm.classList.remove('hidden');
+  // switchTab(tab) {
+  //   if (tab === 'login') {
+  //     this.loginTab.classList.add('active');
+  //     // this.registerTab.classList.remove('active'); // Removed
+  //     this.loginForm.classList.remove('hidden');
+  //     // this.registerForm.classList.add('hidden'); // Removed
+  //   } 
+  //   // else { // Removed else block
+  //   //   this.loginTab.classList.remove('active');
+  //   //   this.registerTab.classList.add('active');
+  //   //   this.loginForm.classList.add('hidden');
+  //   //   this.registerForm.classList.remove('hidden');
 
-      // Make sure departments are loaded for registration
-      this.loadDepartments();
-    }
-  }
+  //   //   // Make sure departments are loaded for registration
+  //   //   this.loadDepartments();
+  //   // }
+  // }
 
-  /**
-   * Load departments for the registration form dropdown
-   */
-  async loadDepartments() {
-    try {
-      const departmentSelect = document.getElementById('register-department');
-      if (!departmentSelect) return;
+  // /** // Removed loadDepartments
+  //  * Load departments for the registration form dropdown
+  //  */
+  // async loadDepartments() {
+  //   try {
+  //     const departmentSelect = document.getElementById('register-department');
+  //     if (!departmentSelect) return;
 
-      // Clear existing options except for the placeholder
-      while (departmentSelect.options.length > 1) {
-        departmentSelect.remove(1);
-      }
+  //     // Clear existing options except for the placeholder
+  //     while (departmentSelect.options.length > 1) {
+  //       departmentSelect.remove(1);
+  //     }
 
-      const departments = await api.getDepartments();
+  //     const departments = await api.getDepartments();
 
-      departments.forEach(dept => {
-        const option = document.createElement('option');
-        // Handle both MongoDB (_id) and SQLite (id) formats
-        option.value = dept.id || dept._id;
-        option.textContent = dept.name;
-        departmentSelect.appendChild(option);
-      });
-    } catch (error) {
-      showToast('Error loading departments: ' + error.message, 'error');
-    }
-  }
+  //     departments.forEach(dept => {
+  //       const option = document.createElement('option');
+  //       // Handle both MongoDB (_id) and SQLite (id) formats
+  //       option.value = dept.id || dept._id;
+  //       option.textContent = dept.name;
+  //       departmentSelect.appendChild(option);
+  //     });
+  //   } catch (error) {
+  //     showToast('Error loading departments: ' + error.message, 'error');
+  //   }
+  // }
 
   /**
    * Handle login form submission
@@ -106,12 +106,13 @@ class AuthManager {
    */
   async handleLogin(event) {
     event.preventDefault();
+    console.log('Login form submitted. Attempting to handle login...'); // Added log
 
-    const email = document.getElementById('login-email').value;
+    const name = document.getElementById('login-name').value; // Changed email to name and id to login-name
     const password = document.getElementById('login-password').value;
 
     try {
-      const userData = await api.login(email, password);
+      const userData = await api.login(name, password); // Changed email to name
       this.setUserData(userData);
       showToast('Login successful', 'success');
       this.showApp();
@@ -120,39 +121,39 @@ class AuthManager {
     }
   }
 
-  /**
-   * Handle register form submission
-   * @param {Event} event - Form submit event
-   */
-  async handleRegister(event) {
-    event.preventDefault();
+  // /** // Removed handleRegister
+  //  * Handle register form submission
+  //  * @param {Event} event - Form submit event
+  //  */
+  // async handleRegister(event) {
+  //   event.preventDefault();
     
-    const name = document.getElementById('register-name').value;
-    const email = document.getElementById('register-email').value;
-    const password = document.getElementById('register-password').value;
-    const department = document.getElementById('register-department').value;
+  //   const name = document.getElementById('register-name').value;
+  //   const email = document.getElementById('register-email').value;
+  //   const password = document.getElementById('register-password').value;
+  //   const department = document.getElementById('register-department').value;
     
-    if (!name || !email || !password) {
-      showToast('Please fill all required fields', 'error');
-      return;
-    }
+  //   if (!name || !email || !password) {
+  //     showToast('Please fill all required fields', 'error');
+  //     return;
+  //   }
     
-    try {
-      // Only send department if it's selected
-      const userData = await api.register({ 
-        name, 
-        email, 
-        password, 
-        department: department !== "" ? department : undefined 
-      });
+  //   try {
+  //     // Only send department if it's selected
+  //     const userData = await api.register({ 
+  //       name, 
+  //       email, 
+  //       password, 
+  //       department: department !== "" ? department : undefined 
+  //     });
       
-      this.setUserData(userData);
-      showToast('Registration successful', 'success');
-      this.showApp();
-    } catch (error) {
-      showToast('Registration failed: ' + error.message, 'error');
-    }
-  }
+  //     this.setUserData(userData);
+  //     showToast('Registration successful', 'success');
+  //     this.showApp();
+  //   } catch (error) {
+  //     showToast('Registration failed: ' + error.message, 'error');
+  //   }
+  // }
 
   /**
    * Load the user profile using the stored token
@@ -178,7 +179,7 @@ class AuthManager {
 
     // Update UI elements with user information
     if (this.userNameElement) {
-      this.userNameElement.textContent = userData.name;
+      this.userNameElement.textContent = userData.name; // Reverted to name
     }
 
     if (this.userDepartmentElement && userData.department) {
@@ -186,7 +187,7 @@ class AuthManager {
     }
 
     // Show/hide admin-only elements
-    this.updateAdminUI(userData.isAdmin);
+    this.updateAdminUI(userData.isAdmin); // Reverted to isAdmin
   }
 
   /**
@@ -257,7 +258,7 @@ class AuthManager {
    * @returns {boolean} Admin status
    */
   isAdmin() {
-    return this.user && this.user.isAdmin;
+    return this.user && this.user.isAdmin; // Reverted to isAdmin
   }
 }
 
