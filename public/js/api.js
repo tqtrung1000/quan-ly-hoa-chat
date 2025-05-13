@@ -137,29 +137,112 @@ class ApiService {
     return await this.request(`/departments/search/${term}`);
   }
 
-  // Bottle endpoints
-  async getBottles() {
-    return await this.request('/bottles');
+  // Bottle endpoints (Old - to be removed or updated)
+  // async getBottles() {
+  //   return await this.request('/bottles');
+  // }
+
+  // async getBottleByCode(code) {
+  //   return await this.request(`/bottles/code/${code}`);
+  // }
+
+  // async createBottle(bottleData) {
+  //   return await this.request('/bottles', 'POST', bottleData);
+  // }
+
+  // async distributeBottles(distributionData) { 
+  //   return await this.request('/bottles/distribute', 'POST', distributionData);
+  // }
+
+  // async returnBottle(returnData) {
+  //   return await this.request('/bottles/return', 'POST', returnData);
+  // }
+
+  // async getBatchInfo(batchId) {
+  //   return await this.request(`/bottles/batch/${batchId}`);
+  // }
+
+  // ChemicalType endpoints
+  async getChemicalTypes() {
+    return await this.request('/chemicaltypes');
   }
 
-  async getBottleByCode(code) {
-    return await this.request(`/bottles/code/${code}`);
+  async createChemicalType(data) {
+    return await this.request('/chemicaltypes', 'POST', data);
   }
 
-  async createBottle(bottleData) {
-    return await this.request('/bottles', 'POST', bottleData);
+  async updateChemicalType(id, data) {
+    return await this.request(`/chemicaltypes/${id}`, 'PUT', data);
   }
 
-  async distributeBottles(distributionData) { // distributionData giờ sẽ chứa recipientName thay vì userId
-    return await this.request('/bottles/distribute', 'POST', distributionData);
+  async deleteChemicalType(id) {
+    return await this.request(`/chemicaltypes/${id}`, 'DELETE');
   }
 
-  async returnBottle(returnData) {
-    return await this.request('/bottles/return', 'POST', returnData);
+  // Chemical actions endpoints
+  async importChemicals(data) {
+    return await this.request('/chemicals/import', 'POST', data);
   }
 
-  async getBatchInfo(batchId) {
-    return await this.request(`/bottles/batch/${batchId}`);
+  async distributeChemicals(data) {
+    return await this.request('/chemicals/distribute', 'POST', data);
+  }
+
+  async returnChemicals(data) {
+    return await this.request('/chemicals/return', 'POST', data);
+  }
+
+  // History and Log endpoints (Assuming these endpoints will be created)
+  async getChemicalHistory() {
+    return await this.request('/chemicals/history'); // Placeholder, backend endpoint needed
+  }
+
+  async getUnknownBarcodes() {
+    return await this.request('/chemicals/unknown-barcodes'); // Placeholder, backend endpoint needed
+  }
+
+  // BloodBottleType endpoints
+  async getBloodBottleTypes() {
+    return await this.request('/bloodbottles/types');
+  }
+
+  async createBloodBottleType(data) {
+    return await this.request('/bloodbottles/types', 'POST', data);
+  }
+
+  async updateBloodBottleType(id, data) {
+    return await this.request(`/bloodbottles/types/${id}`, 'PUT', data);
+  }
+
+  async deleteBloodBottleType(id) {
+    return await this.request(`/bloodbottles/types/${id}`, 'DELETE');
+  }
+
+  // BloodBottle actions endpoints
+  async importBloodBottles(data) {
+    return await this.request('/bloodbottles/import', 'POST', data);
+  }
+
+  async distributeBloodBottle(data) {
+    return await this.request('/bloodbottles/distribute', 'POST', data);
+  }
+
+  async returnBloodBottle(data) {
+    return await this.request('/bloodbottles/return', 'POST', data);
+  }
+
+  async markBloodBottleUsed(data) {
+    return await this.request('/bloodbottles/mark-used', 'POST', data);
+  }
+
+  // BloodBottle statistics endpoint
+  async getBloodBottleStats(params = {}) {
+    const queryString = Object.keys(params)
+      .filter(key => params[key] !== undefined && params[key] !== '')
+      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+      .join('&');
+    
+    return await this.request(`/bloodbottles/stats${queryString ? `?${queryString}` : ''}`);
   }
 }
 

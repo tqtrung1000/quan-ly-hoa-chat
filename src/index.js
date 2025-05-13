@@ -7,6 +7,9 @@ const { User, syncDatabase } = require('./models/index'); // Added User import
 const authRoutes = require('./routes/auth.routes');
 const departmentRoutes = require('./routes/department.routes');
 const bottleRoutes = require('./routes/bottle.routes');
+const chemicalTypeRoutes = require('./routes/chemicaltype.routes'); // Import new chemical type routes
+const chemicalRoutes = require('./routes/chemical.routes'); // Import new chemical routes
+const bloodBottleRoutes = require('./routes/bloodbottle.routes'); // Import blood bottle routes
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,7 +23,10 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/departments', departmentRoutes);
-app.use('/api/bottles', bottleRoutes);
+app.use('/api/bottles', bottleRoutes); // Keep old bottle routes for now, might remove later
+app.use('/api/chemicaltypes', chemicalTypeRoutes); // Add new chemical type routes
+app.use('/api/chemicals', chemicalRoutes); // Add new chemical routes
+app.use('/api/bloodbottles', bloodBottleRoutes); // Add blood bottle routes
 
 // Serve frontend
 app.get('*', (req, res) => {

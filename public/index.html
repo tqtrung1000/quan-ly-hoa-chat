@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hệ Thống Quản Lý Chai Máu</title>
+  <title>Hệ Thống Quản Lý Hóa Chất</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -12,7 +12,7 @@
     <!-- Auth Container -->
     <div id="auth-container" class="auth-container">
       <div class="logo">
-        <h1><i class="fas fa-vial"></i> Hệ Thống Quản Lý Chai Máu</h1>
+        <h1><i class="fas fa-vial"></i> Hệ Thống Quản Lý Hóa Chất</h1>
       </div>
       <!-- Tabs Div Removed -->
       
@@ -37,7 +37,7 @@
       <!-- Header -->
       <header class="header">
         <div class="logo">
-          <h1><i class="fas fa-vial"></i> Hệ Thống Quản Lý Chai Máu</h1>
+          <h1><i class="fas fa-vial"></i> Hệ Thống Quản Lý Hóa Chất</h1>
         </div>
         <div class="user-info">
           <span id="user-name"></span>
@@ -47,29 +47,86 @@
         </div>
       </header>
       
-      <!-- Sidebar -->
-      <nav class="sidebar">
-        <ul class="nav-menu">
-          <li class="nav-item" data-page="dashboard">
+      <!-- Main Tab Navigation -->
+      <nav class="main-tabs">
+        <ul class="tab-menu">
+          <li class="tab-item" data-tab="dashboard">
             <i class="fas fa-tachometer-alt"></i> Bảng Điều Khiển
           </li>
-          <li class="nav-item" data-page="distribute">
-            <i class="fas fa-share-square"></i> Phân Phối Chai
+          <li class="tab-item" data-tab="blood-bottle">
+            <i class="fas fa-tint"></i> Quản Lý Chai Cấy Máu
           </li>
-          <li class="nav-item" data-page="return">
-            <i class="fas fa-undo"></i> Trả Chai
+          <li class="tab-item" data-tab="chemical">
+            <i class="fas fa-vial"></i> Quản Lý Hóa Chất
           </li>
-          <li class="nav-item" data-page="departments">
-            <i class="fas fa-hospital"></i> Các Khoa
-          </li>
-          <li class="nav-item admin-only hidden" data-page="bottles">
-            <i class="fas fa-flask"></i> Quản Lý Chai
-          </li>
-          <li class="nav-item admin-only hidden" data-page="users">
-            <i class="fas fa-users"></i> Quản Lý Người Dùng
+          <li class="tab-item" data-tab="system">
+            <i class="fas fa-cogs"></i> Quản Lý Hệ Thống
           </li>
         </ul>
       </nav>
+
+      <!-- Tab Content Container -->
+      <div class="tab-content-container">
+        <!-- Blood Bottle Tab Submenu -->
+        <div id="blood-bottle-tab-content" class="tab-content hidden">
+          <div class="submenu">
+            <ul class="submenu-items">
+              <li class="submenu-item" data-page="blood-bottle-import">
+                <i class="fas fa-file-import"></i> Nhập Kho Chai Cấy Máu
+              </li>
+              <li class="submenu-item" data-page="blood-bottle-distribute">
+                <i class="fas fa-share-square"></i> Phân Phối Chai Cấy Máu
+              </li>
+              <li class="submenu-item" data-page="blood-bottle-return">
+                <i class="fas fa-undo"></i> Thu Hồi Chai Cấy Máu
+              </li>
+              <li class="submenu-item" data-page="blood-bottle-stats">
+                <i class="fas fa-chart-bar"></i> Thống Kê Chai Cấy Máu
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Chemical Tab Submenu -->
+        <div id="chemical-tab-content" class="tab-content hidden">
+          <div class="submenu">
+            <ul class="submenu-items">
+              <li class="submenu-item" data-page="import-chemical">
+                <i class="fas fa-file-import"></i> Nhập Kho Hóa Chất
+              </li>
+              <li class="submenu-item" data-page="distribute">
+                <i class="fas fa-share-square"></i> Phân Phối Hóa Chất
+              </li>
+              <li class="submenu-item" data-page="return">
+                <i class="fas fa-undo"></i> Thu Hồi Hóa Chất
+              </li>
+              <li class="submenu-item" data-page="chemical-stats">
+                <i class="fas fa-chart-bar"></i> Thống Kê Hóa Chất
+              </li>
+              <li class="submenu-item admin-only hidden" data-page="chemicals">
+                <i class="fas fa-flask"></i> Quản Lý Loại Hóa Chất
+              </li>
+              <li class="submenu-item admin-only hidden" data-page="unknown-barcodes">
+                <i class="fas fa-barcode"></i> Mã Vạch Không Xác Định
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- System Tab Submenu -->
+        <div id="system-tab-content" class="tab-content hidden">
+          <div class="submenu">
+            <ul class="submenu-items">
+              <li class="submenu-item" data-page="departments">
+                <i class="fas fa-hospital"></i> Quản Lý Khoa
+              </li>
+              <li class="submenu-item admin-only hidden" data-page="users">
+                <i class="fas fa-users"></i> Quản Lý Người Dùng
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
       
       <!-- Main Content -->
       <main class="main-content">
@@ -79,18 +136,18 @@
           <div class="dashboard-cards">
             <div class="card">
               <div class="card-header">
-                <h3>Chai Đã Phân Phối</h3>
+                <h3>Tổng Tồn Kho Hóa Chất Kiểu 1</h3>
               </div>
               <div class="card-body">
-                <h2 id="bottles-out">0</h2>
+                <h2 id="total-type1-stock-dashboard">0</h2>
               </div>
             </div>
             <div class="card">
               <div class="card-header">
-                <h3>Chai Khả Dụng</h3>
+                <h3>Tổng Tồn Kho Hóa Chất Kiểu 2</h3>
               </div>
               <div class="card-body">
-                <h2 id="bottles-available">0</h2>
+                <h2 id="total-type2-stock-dashboard">0</h2>
               </div>
             </div>
             <div class="card">
@@ -101,6 +158,14 @@
                 <h2 id="department-count">0</h2>
               </div>
             </div>
+             <div class="card">
+              <div class="card-header">
+                <h3>Mã Vạch Không Xác Định</h3>
+              </div>
+              <div class="card-body">
+                <h2 id="unknown-barcodes-count">0</h2>
+              </div>
+            </div>
           </div>
           
           <div class="recent-activity">
@@ -109,8 +174,9 @@
               <thead>
                 <tr>
                   <th>Hành Động</th>
-                  <th>Khoa</th>
-                  <th>Số Lượng Chai</th>
+                  <th>Loại Hóa Chất</th> <!-- Updated header -->
+                  <th>Mã Vạch/Số Lượng</th> <!-- Updated header -->
+                  <th>Khoa/Người Nhận</th> <!-- Updated header -->
                   <th>Ngày</th>
                 </tr>
               </thead>
@@ -121,9 +187,41 @@
           </div>
         </div>
         
-        <!-- Distribute Bottles Page -->
+        <!-- Import Chemical Page -->
+        <div id="import-chemical-page" class="page hidden">
+          <h2>Nhập Kho Hóa Chất</h2>
+          
+          <form id="import-chemical-form" class="form">
+            <div class="form-group">
+              <label for="import-chemical-type">Loại Hóa Chất</label>
+              <select id="import-chemical-type" required>
+                <option value="">Chọn loại hóa chất</option>
+                <!-- Chemical types will be populated here dynamically -->
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="import-quantity">Số Lượng Nhập</label>
+              <input type="number" id="import-quantity" min="1" required>
+            </div>
+
+             <div class="form-group">
+              <label for="import-batch-id">Mã Lô (Không bắt buộc)</label>
+              <input type="text" id="import-batch-id" placeholder="Nhập mã lô nếu có">
+            </div>
+            
+            <div class="form-group">
+              <label for="import-notes">Ghi Chú (Không bắt buộc)</label>
+              <textarea id="import-notes" rows="3"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Nhập Kho</button>
+          </form>
+        </div>
+
+        <!-- Distribute Chemicals Page -->
         <div id="distribute-page" class="page hidden">
-          <h2>Phân Phối Chai</h2>
+          <h2>Phân Phối Hóa Chất</h2>
           
           <form id="distribute-form" class="form">
             <div class="form-group">
@@ -142,16 +240,14 @@
             </div>
             
             <div class="form-group">
-              <label for="bottle-codes">Mã Chai</label>
-              <div class="bottle-code-container">
-                <div class="bottle-input-group">
-                  <input type="text" class="bottle-code-input" placeholder="Quét hoặc nhập mã chai">
-                  <button type="button" class="btn btn-sm add-bottle-btn">Thêm</button>
-                </div>
-                <ul id="bottle-list" class="bottle-list">
-                  <!-- Bottle codes will be added here -->
-                </ul>
-              </div>
+              <label for="barcode-scan">Quét Mã Vạch</label>
+              <input type="text" id="barcode-scan" placeholder="Quét hoặc nhập mã vạch" required>
+            </div>
+
+            <!-- Quantity input for Type 1 will be added dynamically here -->
+            <div id="quantity-group" class="form-group hidden">
+                <label for="distribute-quantity">Số Lượng</label>
+                <input type="number" id="distribute-quantity" min="1">
             </div>
             
             <div class="form-group">
@@ -159,56 +255,62 @@
               <textarea id="distribute-notes" rows="3"></textarea>
             </div>
             
-            <button type="submit" class="btn btn-primary">Phân Phối Chai</button>
+            <button type="submit" class="btn btn-primary">Phân Phối</button>
           </form>
         </div>
         
-        <!-- Return Bottles Page -->
+        <!-- Return Chemicals Page -->
         <div id="return-page" class="page hidden">
-          <h2>Trả Chai</h2>
+          <h2>Thu Hồi Hóa Chất</h2>
           
           <div class="form">
             <div class="form-group">
-              <label for="return-bottle-code">Quét Mã Chai</label>
-              <input type="text" id="return-bottle-code" placeholder="Quét hoặc nhập mã chai">
-              <button id="scan-return-bottle" class="btn">Quét</button>
+              <label for="return-barcode">Quét Mã Vạch</label>
+              <input type="text" id="return-barcode" placeholder="Quét hoặc nhập mã vạch">
+              <button id="scan-return-barcode" class="btn">Quét</button>
             </div>
           </div>
           
-          <div id="bottle-info" class="bottle-info hidden">
-            <h3>Thông Tin Chai</h3>
+          <div id="chemical-item-info" class="info-section hidden"> <!-- Renamed ID and class -->
+            <h3>Thông Tin Chai/Lọ Hóa Chất</h3> <!-- Updated title -->
             <div class="info-card">
               <div class="info-row">
-                <span class="info-label">Mã Chai:</span>
-                <span id="bottle-info-code" class="info-value"></span>
+                <span class="info-label">Mã Vạch:</span> <!-- Updated label -->
+                <span id="item-info-barcode" class="info-value"></span> <!-- Renamed ID -->
+              </div>
+               <div class="info-row">
+                <span class="info-label">Loại Hóa Chất:</span> <!-- New row -->
+                <span id="item-info-chemical-type" class="info-value"></span> <!-- New ID -->
               </div>
               <div class="info-row">
                 <span class="info-label">Khoa Hiện Tại:</span>
-                <span id="bottle-info-department" class="info-value"></span>
+                <span id="item-info-department" class="info-value"></span> <!-- Renamed ID -->
               </div>
               <div class="info-row">
                 <span class="info-label">Người Nhận:</span>
-                <span id="bottle-info-user" class="info-value"></span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Mã Lô:</span>
-                <span id="bottle-info-batch" class="info-value"></span>
+                <span id="item-info-user" class="info-value"></span> <!-- Renamed ID -->
               </div>
               <div class="info-row">
                 <span class="info-label">Ngày Phân Phối:</span>
-                <span id="bottle-info-date" class="info-value"></span>
+                <span id="item-info-distribution-date" class="info-value"></span> <!-- Renamed ID -->
+              </div>
+               <div class="info-row">
+                <span class="info-label">Trạng Thái:</span> <!-- New row -->
+                <span id="item-info-status" class="info-value"></span> <!-- New ID -->
               </div>
             </div>
             
             <div class="form">
               <div class="form-group">
-                <label for="return-notes">Ghi Chú Trả Lại</label>
+                <label for="return-notes">Ghi Chú Thu Hồi</label> <!-- Updated label -->
                 <textarea id="return-notes" rows="3"></textarea>
               </div>
-              <button id="return-bottle-btn" class="btn btn-primary">Trả Chai</button>
+              <button id="return-chemical-btn" class="btn btn-primary">Thu Hồi Hóa Chất</button> <!-- Updated button text -->
             </div>
           </div>
           
+          <!-- Batch info section might not be directly relevant for item return, keep for now but review -->
+          <!-- Hide this section for now as it's bottle-specific -->
           <div id="batch-info" class="batch-info hidden">
             <h3>Thông Tin Lô</h3>
             <div class="info-card">
@@ -257,7 +359,7 @@
               <tr>
                 <th>Tên</th>
                 <th>Mã</th>
-                <th>Chai Chưa Trả</th>
+                <th>Chai Cấy Máu Chưa Trả</th> <!-- Updated column -->
                 <th>Thao Tác</th>
               </tr>
             </thead>
@@ -295,16 +397,16 @@
               <h3>Chi Tiết Khoa</h3>
               <div id="department-detail-content"></div>
               
-              <h4>Chai Chưa Trả</h4>
+              <h4>Chai Cấy Máu Chưa Trả</h4> <!-- Updated title -->
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Mã Chai</th>
-                    <th>Mã Lô</th>
+                <th>Mã Chai Cấy Máu</th> <!-- Updated header -->
+                    <th>Mã Lô</th> <!-- This header might be removed/updated -->
                     <th>Ngày Phân Phối</th>
                   </tr>
                 </thead>
-                <tbody id="unreturned-bottles-table">
+                <tbody id="unreturned-bottles-table"> <!-- This ID needs update -->
                   <!-- Unreturned bottles data will be populated here -->
                 </tbody>
               </table>
@@ -312,60 +414,507 @@
           </div>
         </div>
         
-        <!-- Manage Bottles Page (Admin Only) -->
-        <div id="bottles-page" class="page hidden">
-          <h2>Quản Lý Chai</h2>
+        <!-- Manage Chemicals Page (Admin Only) -->
+        <div id="chemicals-page" class="page hidden">
+          <h2>Quản Lý Hóa Chất</h2>
           
           <div class="action-bar">
-            <button id="add-bottle-btn" class="btn">Thêm Chai Mới</button>
+            <button id="add-chemical-type-btn" class="btn">Thêm Loại Hóa Chất Mới</button>
+             <!-- Manage Type 2 Prefixes button might be integrated into the table or a separate modal -->
+             <!-- <button id="manage-type2-prefixes-btn" class="btn">Quản Lý Tiền Tố Type 2</button> -->
           </div>
 
           <div class="info-card mb-2">
             <div class="info-row">
-              <span class="info-label">Tổng Số Chai Chưa Phân Phối (Khả Dụng):</span>
-              <span id="total-available-bottles" class="info-value">Đang tải...</span>
+              <span class="info-label">Tổng Số Lượng Hóa Chất Kiểu 1 (Tồn kho):</span>
+              <span id="total-type1-stock" class="info-value">Đang tải...</span>
+            </div>
+             <div class="info-row">
+              <span class="info-label">Tổng Số Lượng Hóa Chất Kiểu 2 (Trong kho):</span>
+              <span id="total-type2-stock" class="info-value">Đang tải...</span>
             </div>
           </div>
           
+          <!-- Filter bar might need significant changes or removal -->
+          <!-- Keeping a basic search for chemical type name -->
           <div class="filter-bar">
-            <select id="bottle-status-filter">
-              <option value="all">Tất Cả Trạng Thái</option>
-              <option value="available">Khả Dụng</option>
-              <option value="distributed">Đã Phân Phối</option>
-            </select>
-            <input type="text" id="bottle-search" placeholder="Tìm kiếm mã chai...">
+            <input type="text" id="chemical-type-search" placeholder="Tìm kiếm tên loại hóa chất..."> <!-- Updated ID and placeholder -->
           </div>
           
           <table class="data-table">
             <thead>
               <tr>
-                <th>Mã</th>
-                <th>Trạng Thái</th>
-                <th>Khoa Hiện Tại</th>
-                <th>Mã Lô</th>
-                <th>Cập Nhật Lần Cuối</th>
+                <th>Tên</th>
+                <th>Đơn Vị</th>
+                <th>Kiểu Mã Vạch</th>
+                <th>Mã Đại Diện/Tiền Tố</th>
+                <th>Tồn Kho (Type 1)</th>
+                <th>Tồn Kho (Type 2)</th>
+                <th>Thao Tác</th>
               </tr>
             </thead>
-            <tbody id="bottles-table">
-              <!-- Bottle data will be populated here -->
+            <tbody id="chemical-types-table">
+              <!-- Chemical type data will be populated here -->
             </tbody>
           </table>
           
-          <div id="add-bottle-modal" class="modal hidden">
+          <!-- Add Chemical Type Modal -->
+          <div id="add-chemical-type-modal" class="modal hidden">
             <div class="modal-content">
               <span class="close-modal">&times;</span>
-              <h3>Thêm Chai Mới</h3>
-              <form id="add-bottle-form" class="form">
+              <h3>Thêm Loại Hóa Chất Mới</h3>
+              <form id="add-chemical-type-form" class="form">
                 <div class="form-group">
-                  <label for="new-bottle-code">Mã Chai</label>
-                  <input type="text" id="new-bottle-code" required>
+                  <label for="new-chemical-type-name">Tên Hóa Chất</label>
+                  <input type="text" id="new-chemical-type-name" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Thêm Chai</button>
+                 <div class="form-group">
+                  <label for="new-chemical-type-unit">Đơn Vị</label>
+                  <input type="text" id="new-chemical-type-unit" required>
+                </div>
+                 <div class="form-group">
+                  <label for="new-chemical-type-barcode-type">Kiểu Mã Vạch</label>
+                  <select id="new-chemical-type-barcode-type" required>
+                    <option value="">Chọn kiểu</option>
+                    <option value="Type1">Kiểu 1 (Mã vạch giống hệt)</option>
+                    <option value="Type2">Kiểu 2 (Tiền tố + mã duy nhất)</option>
+                  </select>
+                </div>
+                 <div class="form-group">
+                  <label for="new-chemical-type-representative-code">Mã Đại Diện / Tiền Tố</label>
+                  <input type="text" id="new-chemical-type-representative-code">
+                </div>
+                <button type="submit" class="btn btn-primary">Thêm Loại Hóa Chất</button>
               </form>
             </div>
           </div>
+
+           <!-- Manage Type 2 Prefixes Modal (New) -->
+           <!-- This modal might be better handled by clicking on a Type 2 chemical type in the table -->
+          <div id="manage-type2-prefixes-modal" class="modal hidden">
+            <div class="modal-content">
+              <span class="close-modal">&times;</span>
+              <h3>Quản Lý Tiền Tố Hóa Chất Kiểu 2</h3>
+              <!-- Content for managing Type 2 prefixes will go here -->
+              <p>This section will list Type 2 chemical types and their prefixes.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Unknown Barcodes Page (Admin Only) -->
+        <div id="unknown-barcodes-page" class="page hidden">
+          <h2>Mã Vạch Không Xác Định</h2>
+          
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã Vạch</th>
+                <th>Thời Gian Quét</th>
+                <th>Người Quét</th>
+                <th>Ghi Chú</th>
+              </tr>
+            </thead>
+            <tbody id="unknown-barcodes-table">
+              <!-- Unknown barcode data will be populated here -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Chemical Stats Page -->
+        <div id="chemical-stats-page" class="page hidden">
+          <h2>Thống Kê Hóa Chất</h2>
+          
+          <div class="stats-filters">
+            <div class="filter-row">
+              <div class="form-group">
+                <label for="chemical-stats-start-date">Từ Ngày</label>
+                <input type="date" id="chemical-stats-start-date">
+              </div>
+              <div class="form-group">
+                <label for="chemical-stats-end-date">Đến Ngày</label>
+                <input type="date" id="chemical-stats-end-date">
+              </div>
+              <div class="form-group">
+                <label for="chemical-stats-type">Loại Hóa Chất</label>
+                <select id="chemical-stats-type">
+                  <option value="">Tất cả</option>
+                  <!-- Chemical types will be populated here -->
+                </select>
+              </div>
+            </div>
+            <div class="filter-row">
+              <div class="form-group">
+                <label for="chemical-stats-department">Khoa</label>
+                <select id="chemical-stats-department">
+                  <option value="">Tất cả</option>
+                  <!-- Departments will be populated here -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="chemical-stats-user">Người Dùng</label>
+                <select id="chemical-stats-user">
+                  <option value="">Tất cả</option>
+                  <!-- Users will be populated here -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="chemical-stats-lot">Số Lô</label>
+                <input type="text" id="chemical-stats-lot" placeholder="Lọc theo số lô">
+              </div>
+            </div>
+            <div class="form-group">
+              <button id="apply-chemical-filters-btn" class="btn btn-primary">Áp Dụng Bộ Lọc</button>
+              <button id="reset-chemical-filters-btn" class="btn btn-outline">Xóa Bộ Lọc</button>
+            </div>
+          </div>
+          
+          <div class="stats-summary">
+            <div class="dashboard-cards">
+              <div class="card">
+                <div class="card-header">
+                  <h3>Tổng Nhập Kho Type 1</h3>
+                </div>
+                <div class="card-body">
+                  <h2 id="chemical-total-type1-imported">0</h2>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3>Tồn Kho Type 1</h3>
+                </div>
+                <div class="card-body">
+                  <h2 id="chemical-total-type1-stock">0</h2>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3>Tổng Nhập Kho Type 2</h3>
+                </div>
+                <div class="card-body">
+                  <h2 id="chemical-total-type2-imported">0</h2>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3>Đã Phân Phối Type 2</h3>
+                </div>
+                <div class="card-body">
+                  <h2 id="chemical-total-type2-distributed">0</h2>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <h3>Lịch Sử Hoạt Động</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Thời Gian</th>
+                <th>Hành Động</th>
+                <th>Loại Hóa Chất</th>
+                <th>Kiểu Mã</th>
+                <th>Mã Vạch/Số Lượng</th>
+                <th>Số Lô</th>
+                <th>Khoa/Người Nhận</th>
+                <th>Ghi Chú</th>
+              </tr>
+            </thead>
+            <tbody id="chemical-history-table">
+              <!-- Chemical history will be populated here -->
+            </tbody>
+          </table>
         </div>
         
+        <!-- Blood Bottle Import Page -->
+        <div id="blood-bottle-import-page" class="page hidden">
+          <h2>Nhập Kho Chai Cấy Máu</h2>
+          
+          <form id="import-blood-bottle-form" class="form">
+            <div class="form-group">
+              <label for="blood-bottle-type">Loại Chai Cấy Máu</label>
+              <select id="blood-bottle-type" required>
+                <option value="">Chọn loại chai cấy máu</option>
+                <!-- Blood bottle types will be populated here -->
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="blood-bottle-quantity">Số Lượng</label>
+              <input type="number" id="blood-bottle-quantity" min="1" required>
+            </div>
+
+            <div class="form-group">
+              <label for="blood-bottle-lot-number">Số Lô</label>
+              <input type="text" id="blood-bottle-lot-number" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="blood-bottle-expiry-date">Hạn Sử Dụng</label>
+              <input type="date" id="blood-bottle-expiry-date" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="blood-bottle-import-notes">Ghi Chú (Không bắt buộc)</label>
+              <textarea id="blood-bottle-import-notes" rows="3"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Nhập Kho</button>
+          </form>
+        </div>
+
+        <!-- Blood Bottle Distribute Page -->
+        <div id="blood-bottle-distribute-page" class="page hidden">
+          <h2>Phân Phối Chai Cấy Máu</h2>
+          
+          <form id="distribute-blood-bottle-form" class="form">
+            <div class="form-group">
+              <label for="blood-bottle-distribute-department">Khoa Nhận</label>
+              <div class="search-input">
+                <input type="text" id="blood-bottle-department-search" placeholder="Tìm kiếm khoa...">
+                <div id="blood-bottle-department-results" class="search-results"></div>
+              </div>
+              <input type="hidden" id="blood-bottle-distribute-department-id" required>
+              <span id="blood-bottle-selected-department" class="selected-item"></span>
+            </div>
+            
+            <div class="form-group">
+              <label for="blood-bottle-distribute-recipient">Người Nhận</label>
+              <input type="text" id="blood-bottle-distribute-recipient" placeholder="Nhập tên người nhận" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="blood-bottle-barcode-scan">Quét Mã Vạch Chai Cấy Máu</label>
+              <input type="text" id="blood-bottle-barcode-scan" placeholder="Quét hoặc nhập mã vạch" required>
+            </div>
+            
+            <div id="blood-bottle-type-selection" class="form-group hidden">
+              <label for="blood-bottle-distribute-type">Loại Chai Cấy Máu</label>
+              <select id="blood-bottle-distribute-type" required>
+                <option value="">Chọn loại chai cấy máu</option>
+                <!-- Blood bottle types will be populated here -->
+              </select>
+            </div>
+            
+            <div id="blood-bottle-lot-selection" class="form-group hidden">
+              <label for="blood-bottle-distribute-lot">Số Lô</label>
+              <input type="text" id="blood-bottle-distribute-lot" required>
+            </div>
+            
+            <div id="blood-bottle-expiry-selection" class="form-group hidden">
+              <label for="blood-bottle-distribute-expiry">Hạn Sử Dụng</label>
+              <input type="date" id="blood-bottle-distribute-expiry" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="blood-bottle-distribute-notes">Ghi Chú</label>
+              <textarea id="blood-bottle-distribute-notes" rows="3"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Phân Phối</button>
+          </form>
+
+          <!-- Warning modal for shorter expiry date -->
+          <div id="expiry-warning-modal" class="modal hidden">
+            <div class="modal-content">
+              <span class="close-modal">&times;</span>
+              <h3><i class="fas fa-exclamation-triangle text-warning"></i> Cảnh Báo Hạn Sử Dụng</h3>
+              <p id="expiry-warning-message"></p>
+              <div class="modal-actions">
+                <button id="continue-distribute-btn" class="btn btn-warning">Tiếp tục xuất chai này</button>
+                <button id="cancel-distribute-btn" class="btn btn-outline">Hủy và chọn lại</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Blood Bottle Return Page -->
+        <div id="blood-bottle-return-page" class="page hidden">
+          <h2>Thu Hồi Chai Cấy Máu</h2>
+          
+          <div class="form">
+            <div class="form-group">
+              <label for="blood-bottle-return-barcode">Quét Mã Vạch Chai Cấy Máu</label>
+              <input type="text" id="blood-bottle-return-barcode" placeholder="Quét hoặc nhập mã vạch">
+              <button id="blood-bottle-scan-return" class="btn">Quét</button>
+            </div>
+          </div>
+          
+          <div id="blood-bottle-info" class="info-section hidden">
+            <h3>Thông Tin Chai Cấy Máu</h3>
+            <div class="info-card">
+              <div class="info-row">
+                <span class="info-label">Mã Vạch:</span>
+                <span id="blood-bottle-info-barcode" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Loại Chai Cấy Máu:</span>
+                <span id="blood-bottle-info-type" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Số Lô:</span>
+                <span id="blood-bottle-info-lot" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Hạn Sử Dụng:</span>
+                <span id="blood-bottle-info-expiry" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Khoa Hiện Tại:</span>
+                <span id="blood-bottle-info-department" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Người Nhận:</span>
+                <span id="blood-bottle-info-recipient" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Ngày Phân Phối:</span>
+                <span id="blood-bottle-info-distribution-date" class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Trạng Thái:</span>
+                <span id="blood-bottle-info-status" class="info-value"></span>
+              </div>
+            </div>
+            
+            <div class="form">
+              <div class="form-group">
+                <label for="blood-bottle-return-notes">Ghi Chú Thu Hồi</label>
+                <textarea id="blood-bottle-return-notes" rows="3"></textarea>
+              </div>
+              <div class="button-group">
+                <button id="return-blood-bottle-btn" class="btn btn-primary">Thu Hồi Chai Cấy Máu</button>
+                <button id="mark-used-blood-bottle-btn" class="btn btn-secondary">Đánh Dấu Đã Sử Dụng Chai</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Blood Bottle Stats Page -->
+        <div id="blood-bottle-stats-page" class="page hidden">
+          <h2>Thống Kê Chai Cấy Máu</h2>
+          
+          <div class="stats-filters">
+            <div class="filter-row">
+              <div class="form-group">
+                <label for="blood-bottle-stats-start-date">Từ Ngày</label>
+                <input type="date" id="blood-bottle-stats-start-date">
+              </div>
+              <div class="form-group">
+                <label for="blood-bottle-stats-end-date">Đến Ngày</label>
+                <input type="date" id="blood-bottle-stats-end-date">
+              </div>
+              <div class="form-group">
+                <label for="blood-bottle-stats-type">Loại Chai Cấy Máu</label>
+                <select id="blood-bottle-stats-type">
+                  <option value="">Tất cả</option>
+                  <!-- Blood bottle types will be populated here -->
+                </select>
+              </div>
+            </div>
+            <div class="filter-row">
+              <div class="form-group">
+                <label for="blood-bottle-stats-department">Khoa</label>
+                <select id="blood-bottle-stats-department">
+                  <option value="">Tất cả</option>
+                  <!-- Departments will be populated here -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="blood-bottle-stats-status">Trạng Thái</label>
+                <select id="blood-bottle-stats-status">
+                  <option value="">Tất cả</option>
+                  <option value="distributed">Đã Phân Phối</option>
+                  <option value="returned">Đã Thu Hồi</option>
+                  <option value="used">Đã Sử Dụng</option>
+                  <option value="expired">Hết Hạn</option>
+                  <option value="lost">Bị Mất</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="blood-bottle-stats-lot">Số Lô</label>
+                <input type="text" id="blood-bottle-stats-lot" placeholder="Lọc theo số lô">
+              </div>
+            </div>
+            <div class="form-group">
+              <button id="apply-blood-bottle-filters-btn" class="btn btn-primary">Áp Dụng Bộ Lọc</button>
+              <button id="reset-blood-bottle-filters-btn" class="btn btn-outline">Xóa Bộ Lọc</button>
+            </div>
+          </div>
+          
+          <div class="stats-summary">
+            <div class="dashboard-cards">
+              <div class="card">
+                <div class="card-header">
+                  <h3>Tổng Nhập Kho</h3>
+                </div>
+                <div class="card-body">
+                  <h2 id="blood-bottle-total-imported">0</h2>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3>Tồn Kho</h3>
+                </div>
+                <div class="card-body">
+                  <h2 id="blood-bottle-total-stock">0</h2>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3>Đã Phân Phối</h3>
+                </div>
+                <div class="card-body">
+                  <h2 id="blood-bottle-total-distributed">0</h2>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3>Đã Sử Dụng</h3>
+                </div>
+                <div class="card-body">
+                  <h2 id="blood-bottle-total-used">0</h2>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <h3>Sắp Hết Hạn (Trong 30 Ngày)</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Loại Chai Cấy Máu</th>
+                <th>Mã Vạch</th>
+                <th>Số Lô</th>
+                <th>Hạn Sử Dụng</th>
+                <th>Trạng Thái</th>
+                <th>Vị Trí Hiện Tại</th>
+              </tr>
+            </thead>
+            <tbody id="expiring-blood-bottles-table">
+              <!-- Expiring blood bottles will be populated here -->
+            </tbody>
+          </table>
+          
+          <h3>Lịch Sử Hoạt Động</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Thời Gian</th>
+                <th>Hành Động</th>
+                <th>Loại Chai Cấy Máu</th>
+                <th>Mã Vạch/Số Lượng</th>
+                <th>Số Lô</th>
+                <th>Khoa/Người Nhận</th>
+                <th>Ghi Chú</th>
+              </tr>
+            </thead>
+            <tbody id="blood-bottle-history-table">
+              <!-- Blood bottle history will be populated here -->
+            </tbody>
+          </table>
+        </div>
+
         <!-- Manage Users Page (Admin Only) -->
         <div id="users-page" class="page hidden">
           <h2>Quản Lý Người Dùng</h2>
